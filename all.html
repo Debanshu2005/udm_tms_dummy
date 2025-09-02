@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Companion Site - Received Data</title>
+    <style>
+        table { border-collapse: collapse; width: 95%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .badge { padding: 3px 6px; border-radius: 4px; }
+        .bg-danger { background-color: #dc3545; color: #fff; }
+        .bg-warning { background-color: #ffc107; color: #000; }
+        .bg-success { background-color: #28a745; color: #fff; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align:center;">Received Data</h2>
+    <table>
+        {% if rows %}
+        <tr>
+            {% for key in rows[0].keys() %}
+                <th>{{ key }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in rows %}
+        <tr>
+            {% for key, value in row.items() %}
+                <td>
+                    {% if key == 'risk' %}
+                        {% if value == 'High' %}
+                            <span class="badge bg-danger">High</span>
+                        {% elif value == 'Medium' %}
+                            <span class="badge bg-warning">Medium</span>
+                        {% else %}
+                            <span class="badge bg-success">Low</span>
+                        {% endif %}
+                    {% elif key == 'vendor_risk' %}
+                        {% if value == 'High' %}
+                            <span class="badge bg-danger">High</span>
+                        {% elif value == 'Medium' %}
+                            <span class="badge bg-warning">Medium</span>
+                        {% else %}
+                            <span class="badge bg-success">Low</span>
+                        {% endif %}
+                    {% else %}
+                        {{ value }}
+                    {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr><td colspan="12" style="text-align:center;">No data received yet.</td></tr>
+        {% endif %}
+    </table>
+</body>
+</html>

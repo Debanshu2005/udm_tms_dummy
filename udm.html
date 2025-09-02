@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UDM - Date Information</title>
+</head>
+<body>
+    <h1>User Depot Module (Dates)</h1>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>UID</th>
+            <th>Fitting Name</th>
+            <th>Supply Date</th>
+            <th>Warranty End</th>
+            <th>Repair Date</th>
+            <th>Next Inspection</th>
+        </tr>
+        {% for r in rows %}
+        <tr>
+            <td>{{ r.uid }}</td>
+            <td>{{ r.item_type }}</td>
+            <td>{{ r.supply_date }}</td>
+            <td>{{ r.warranty_end }}</td>
+            <td>{{ r.repair_date }}</td>
+            <td>{{ r.next_inspection }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="/">Back Home</a></p>
+</body>
+</html>

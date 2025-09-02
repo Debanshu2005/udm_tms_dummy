@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TMS - Risk Information</title>
+</head>
+<body>
+    <h1>Track Management System (Risk Levels)</h1>
+    <table border="1" cellpadding="5">
+        <tr>
+            <th>UID</th>
+            <th>Fitting Name</th>
+            <th>Risk Level</th>
+            <th>Vendor Risk</th>
+        </tr>
+        {% for r in rows %}
+        <tr>
+            <td>{{ r.uid }}</td>
+            <td>{{ r.item_type }}</td>
+            <td>{{ r.risk }}</td>
+            <td>{{ r.vendor_risk }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="/">Back Home</a></p>
+</body>
+</html>
