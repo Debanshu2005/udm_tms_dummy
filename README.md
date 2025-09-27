@@ -57,7 +57,6 @@ Whenever data is entered in the Vendor Site, it is **synced with this portal**, 
 - **UDM Section** → manages manufacturing, supply, warranty, inspection dates.  
 - **TMS Section** → manages technician inspection logs, fitting risk, vendor risk.  
 - **Data Sync** → vendor site pushes data here for simulation.  
-- **Independent DB Tables** → one project, but UDM and TMS each maintain their own records.  
 
 ---
 
