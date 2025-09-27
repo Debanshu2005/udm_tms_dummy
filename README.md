@@ -128,7 +128,7 @@ udm_tms_demo/
 
 - Authentication + role-based access (vendor/technician).
 
-- Automated risk analysis and alerts.
+- Automated alerts based on risk level.
 
 - Digital signatures for inspection records.
   
