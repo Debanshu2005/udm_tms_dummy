@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMS — Transport &amp; Monitoring System | RailQR</title>
+    <meta name="description" content="Transport and Monitoring System for Indian Railways — shipment tracking, risk assessment, and technician inspections.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --orange: #f97316; --blue: #3b82f6; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; padding-bottom: 60px; }
+        .tms-header {
+            background: linear-gradient(135deg, #0f172a 0%, #431407 50%, #0f172a 100%);
+            border-bottom: 1px solid rgba(249,115,22,0.2);
+            padding: 32px 0; margin-bottom: 32px;
+        }
+        .tms-header h1 { font-weight: 800; font-size: 2rem; }
+        .tms-header h1 span { color: #f97316; }
+        .tms-header p { color: #94a3b8; margin: 0; }
+        .stat-pill {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px 24px;
+            transition: all 0.25s;
+        }
+        .stat-pill:hover { transform: translateY(-3px); }
+        .stat-pill .num { font-size: 2rem; font-weight: 800; }
+        .stat-pill .lbl { color: #64748b; font-size: 0.82rem; margin-top: 2px; }
+        .nav-dark .nav-link {
+            color: #64748b; border-radius: 10px; padding: 8px 18px;
+            font-weight: 500; transition: all 0.2s;
+        }
+        .nav-dark .nav-link.active,
+        .nav-dark .nav-link:hover { color: #f97316; background: rgba(249,115,22,0.1); }
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px; overflow: hidden;
+        }
+        .panel-header {
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 16px 24px; font-weight: 600;
+        }
+        .panel-body { padding: 20px 24px; }
+        table { color: #e2e8f0; }
+        .table > :not(caption) > * > * { background: transparent; color: #e2e8f0; border-color: rgba(255,255,255,0.07); }
+        .table thead th { background: rgba(249,115,22,0.15) !important; color: #fb923c; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; }
+        .table tbody tr:hover > td { background: rgba(255,255,255,0.04); }
+        .risk-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+        .risk-high { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+        .risk-medium { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
+        .risk-low { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.3); }
+        .status-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.78rem; font-weight: 600; }
+        .status-delivered { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
+        .status-transit { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+        .status-pending { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
+        .status-created { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+        .tracking-form { background: rgba(249,115,22,0.06); border: 1px solid rgba(249,115,22,0.2); border-radius: 16px; padding: 24px; }
+        .form-control-dark { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0; border-radius: 10px; }
+        .form-control-dark:focus { background: rgba(255,255,255,0.1); border-color: #f97316; color: #e2e8f0; box-shadow: 0 0 0 3px rgba(249,115,22,0.15); }
+        .form-control-dark::placeholder { color: #475569; }
+        .btn-track { background: #f97316; color: white; border: none; border-radius: 10px; padding: 10px 24px; font-weight: 600; transition: all 0.2s; }
+        .btn-track:hover { background: #ea580c; color: white; transform: translateY(-1px); }
+        .tracking-result { display: none; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-top: 16px; }
+        .event-timeline { position: relative; padding-left: 28px; }
+        .event-timeline::before { content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: rgba(255,255,255,0.1); }
+        .event-dot { position: absolute; left: 0; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: rgba(249,115,22,0.2); border: 2px solid #f97316; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #f97316; }
+        .event-item { position: relative; margin-bottom: 20px; }
+        .event-item .event-type { font-weight: 700; font-size: 0.85rem; color: #f97316; }
+        .event-item .event-loc { font-size: 0.8rem; color: #94a3b8; }
+        .event-item .event-time { font-size: 0.75rem; color: #475569; }
+        .back-link { color: #f97316; text-decoration: none; font-size: 0.9rem; }
+        .back-link:hover { color: #fb923c; }
+        .empty-state { text-align: center; padding: 48px 24px; color: #475569; }
+        .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; }
+        .btn-outline-orange { background: transparent; color: #f97316; border: 1px solid rgba(249,115,22,0.4); border-radius: 8px; padding: 6px 16px; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; text-decoration: none; }
+        .btn-outline-orange:hover { background: rgba(249,115,22,0.1); color: #f97316; }
+        .chart-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="tms-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <a href="/" class="back-link mb-2 d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-arrow-left"></i> Portal Home
+                </a>
+                <h1 class="mb-1">TMS — <span>Transport &amp; Monitoring</span></h1>
+                <p>Shipment tracking · Risk assessment · Technician inspections</p>
+            </div>
+            <div class="text-end">
+                <a href="{{ gaugemarket_url }}" target="_blank" class="btn-outline-orange">
+                    <i class="bi bi-box-arrow-up-right"></i> GaugeMarket
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Stats row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num" style="color:#94a3b8">{{ rows|length }}</div>
+                <div class="lbl">Components Tracked</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num text-danger">{{ risk_stats.High }}</div>
+                <div class="lbl">High-Risk Items</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num" style="color:#f97316">{{ shipment_stats.in_transit }}</div>
+                <div class="lbl">Shipments In Transit</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num" style="color:#4ade80">{{ shipment_stats.delivered }}</div>
+                <div class="lbl">Delivered</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation tabs -->
+    <ul class="nav nav-dark mb-4" id="tmsTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-shipments" type="button">
+                <i class="bi bi-truck"></i> Shipments
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-tracking" type="button">
+                <i class="bi bi-search"></i> Track a Package
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-risk" type="button">
+                <i class="bi bi-shield-exclamation"></i> Risk Dashboard
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-components" type="button">
+                <i class="bi bi-clipboard-data"></i> Component Risk
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="tmsTabsContent">
+
+        <!-- ── Tab: Shipments ─────────────────────────────────────────────── -->
+        <div class="tab-pane fade show active" id="tab-shipments">
+            <div class="panel">
+                <div class="panel-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-truck me-2" style="color:#f97316"></i>Active Shipments</span>
+                    <span class="badge" style="background:rgba(249,115,22,0.2);color:#f97316">{{ shipment_stats.total }} total</span>
+                </div>
+                <div class="panel-body p-0">
+                    {% if shipments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Tracking No.</th>
+                                    <th>Order</th>
+                                    <th>Vendor</th>
+                                    <th>Courier</th>
+                                    <th>Status</th>
+                                    <th>ETA</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in shipments %}
+                                <tr>
+                                    <td>
+                                        <code style="color:#f97316;font-size:0.82rem">{{ s.tracking_number or 'N/A' }}</code>
+                                    </td>
+                                    <td>
+                                        <a href="{{ gaugemarket_url }}/orders/{{ s.order_no }}" target="_blank"
+                                           style="color:#60a5fa;text-decoration:none;font-size:0.85rem">
+                                            {{ s.order_no }}
+                                        </a>
+                                    </td>
+                                    <td style="font-size:0.85rem">{{ s.vendor_name or '—' }}</td>
+                                    <td style="font-size:0.82rem;color:#94a3b8">{{ s.courier }}</td>
+                                    <td>
+                                        {% set st = s.status %}
+                                        {% if st == 'DELIVERED' %}
+                                            <span class="status-badge status-delivered"><i class="bi bi-check-circle"></i> Delivered</span>
+                                        {% elif st in ('IN_TRANSIT', 'PICKED_UP', 'ARRIVED_AT_HUB', 'OUT_FOR_DELIVERY') %}
+                                            <span class="status-badge status-transit"><i class="bi bi-broadcast-pin"></i> {{ st|replace('_',' ')|title }}</span>
+                                        {% elif st == 'SHIPMENT_CREATED' %}
+                                            <span class="status-badge status-created"><i class="bi bi-box-seam"></i> Created</span>
+                                        {% else %}
+                                            <span class="status-badge status-pending"><i class="bi bi-clock"></i> {{ st|replace('_',' ')|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-size:0.82rem;color:#94a3b8">{{ s.eta or '—' }}</td>
+                                    <td style="font-size:0.78rem;color:#475569">{{ s.created_at[:10] if s.created_at else '—' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm"
+                                                style="background:rgba(249,115,22,0.1);color:#f97316;border:1px solid rgba(249,115,22,0.2);border-radius:8px;font-size:0.78rem"
+                                                onclick="loadShipmentEvents({{ s.id }}, '{{ s.tracking_number }}')">
+                                            <i class="bi bi-list-ul"></i> Events
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-truck"></i>
+                        <h5>No Shipments Yet</h5>
+                        <p style="font-size:0.85rem">Shipments will appear here when GaugeMarket orders are dispatched.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Events modal area -->
+            <div id="eventsPanel" style="display:none" class="panel mt-3">
+                <div class="panel-header d-flex justify-content-between">
+                    <span id="eventsPanelTitle"><i class="bi bi-list-timeline me-2" style="color:#f97316"></i>Tracking Timeline</span>
+                    <button onclick="document.getElementById('eventsPanel').style.display='none'"
+                            style="background:none;border:none;color:#94a3b8;font-size:1.2rem">&times;</button>
+                </div>
+                <div class="panel-body">
+                    <div id="eventsContent">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Tab: Track a Package ────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-tracking">
+            <div class="tracking-form">
+                <h5 class="fw-bold mb-1" style="color:#f97316"><i class="bi bi-search"></i> Track Shipment</h5>
+                <p style="color:#94a3b8;font-size:0.85rem;margin-bottom:16px">Enter a tracking number to see the live status and event history.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <input type="text" id="trackInput" class="form-control form-control-dark"
+                           placeholder="e.g. IRL2608172A3F9C" style="max-width:360px">
+                    <button class="btn-track" onclick="trackShipment()">
+                        <i class="bi bi-search"></i> Track
+                    </button>
+                </div>
+                <div class="tracking-result" id="trackingResult"></div>
+            </div>
+        </div>
+
+        <!-- ── Tab: Risk Dashboard ─────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-risk">
+            <div class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <div class="chart-box">
+                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Component Risk Distribution</h6>
+                        <canvas id="riskChart" height="220"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="panel h-100">
+                        <div class="panel-header"><i class="bi bi-exclamation-triangle me-2 text-danger"></i>High-Risk Vendors</div>
+                        <div class="panel-body">
+                            {% if high_risk_vendors %}
+                            {% for v in high_risk_vendors %}
+                            <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                                 style="background:rgba(220,38,38,0.08);border-radius:10px;border-left:3px solid #dc2626">
+                                <i class="bi bi-building text-danger"></i>
+                                <span style="font-size:0.9rem">{{ v }}</span>
+                                <span class="ms-auto risk-badge risk-high">High Risk Vendor</span>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state" style="padding:24px">
+                                <i class="bi bi-shield-check" style="color:#4ade80;font-size:2rem;display:block;margin-bottom:8px"></i>
+                                <p style="margin:0;font-size:0.85rem">No high-risk vendors detected.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipment status chart -->
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <div class="chart-box">
+                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Shipment Status Overview</h6>
+                        <canvas id="shipmentChart" height="220"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="panel">
+                        <div class="panel-header"><i class="bi bi-info-circle me-2" style="color:#60a5fa"></i>Shipment Summary</div>
+                        <div class="panel-body">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="p-3 text-center" style="background:rgba(59,130,246,0.1);border-radius:12px">
+                                        <div style="font-size:1.6rem;font-weight:800;color:#60a5fa">{{ shipment_stats.total }}</div>
+                                        <div style="font-size:0.8rem;color:#64748b">Total Shipments</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 text-center" style="background:rgba(249,115,22,0.1);border-radius:12px">
+                                        <div style="font-size:1.6rem;font-weight:800;color:#f97316">{{ shipment_stats.in_transit }}</div>
+                                        <div style="font-size:0.8rem;color:#64748b">In Transit</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 text-center" style="background:rgba(22,163,74,0.1);border-radius:12px">
+                                        <div style="font-size:1.6rem;font-weight:800;color:#4ade80">{{ shipment_stats.delivered }}</div>
+                                        <div style="font-size:0.8rem;color:#64748b">Delivered</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 text-center" style="background:rgba(148,163,184,0.08);border-radius:12px">
+                                        <div style="font-size:1.6rem;font-weight:800;color:#94a3b8">{{ shipment_stats.pending }}</div>
+                                        <div style="font-size:0.8rem;color:#64748b">Pending Pickup</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Tab: Component Risk ─────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-components">
+            <div class="panel">
+                <div class="panel-header">
+                    <i class="bi bi-clipboard-data me-2" style="color:#f97316"></i>Fitting Risk Information
+                </div>
+                <div class="panel-body p-0">
+                    {% if rows %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>UID</th>
+                                    <th>Component</th>
+                                    <th>Vendor</th>
+                                    <th>Asset Risk</th>
+                                    <th>Vendor Risk</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in rows %}
+                                <tr style="cursor:pointer" onclick="window.location='/view/{{ r.uid }}'">
+                                    <td><code style="color:#f97316;font-size:0.82rem">{{ r.uid }}</code></td>
+                                    <td style="font-size:0.85rem">{{ r.item_type or '—' }}</td>
+                                    <td style="font-size:0.85rem">{{ r.vendor or '—' }}</td>
+                                    <td>
+                                        {% if r.risk == 'High' %}
+                                            <span class="risk-badge risk-high"><i class="bi bi-exclamation-triangle"></i> High</span>
+                                        {% elif r.risk == 'Medium' %}
+                                            <span class="risk-badge risk-medium"><i class="bi bi-info-circle"></i> Medium</span>
+                                        {% else %}
+                                            <span class="risk-badge risk-low"><i class="bi bi-check-circle"></i> Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if r.vendor_risk == 'High' %}
+                                            <span class="risk-badge risk-high">High</span>
+                                        {% elif r.vendor_risk == 'Medium' %}
+                                            <span class="risk-badge risk-medium">Medium</span>
+                                        {% else %}
+                                            <span class="risk-badge risk-low">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/view/{{ r.uid }}" class="btn btn-sm btn-outline-orange" onclick="event.stopPropagation()">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h5>No risk data available</h5>
+                        <p style="font-size:0.85rem">Components will appear here once synced from GaugeMarket.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /tab-content -->
+</div><!-- /container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── Risk chart ────────────────────────────────────────────────────────────────
+const riskCtx = document.getElementById('riskChart');
+if (riskCtx) {
+    new Chart(riskCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['High Risk', 'Medium Risk', 'Low Risk'],
+            datasets: [{
+                data: [{{ risk_stats.High }}, {{ risk_stats.Medium }}, {{ risk_stats.Low }}],
+                backgroundColor: ['rgba(220,38,38,0.8)', 'rgba(234,179,8,0.8)', 'rgba(22,163,74,0.8)'],
+                borderColor: ['#dc2626', '#eab308', '#16a34a'],
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 12 } } } },
+            cutout: '65%'
+        }
+    });
+}
+
+// ── Shipment chart ────────────────────────────────────────────────────────────
+const shipCtx = document.getElementById('shipmentChart');
+if (shipCtx) {
+    new Chart(shipCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['In Transit', 'Delivered', 'Pending'],
+            datasets: [{
+                data: [{{ shipment_stats.in_transit }}, {{ shipment_stats.delivered }}, {{ shipment_stats.pending }}],
+                backgroundColor: ['rgba(59,130,246,0.8)', 'rgba(22,163,74,0.8)', 'rgba(249,115,22,0.8)'],
+                borderColor: ['#3b82f6', '#16a34a', '#f97316'],
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 12 } } } },
+            cutout: '65%'
+        }
+    });
+}
+
+// ── Load shipment events ──────────────────────────────────────────────────────
+async function loadShipmentEvents(shipmentId, trackingNo) {
+    const panel = document.getElementById('eventsPanel');
+    const content = document.getElementById('eventsContent');
+    const title = document.getElementById('eventsPanelTitle');
+    panel.style.display = 'block';
+    title.innerHTML = `<i class="bi bi-list-timeline me-2" style="color:#f97316"></i>Timeline — <code style="color:#f97316">${trackingNo}</code>`;
+    content.innerHTML = '<div class="text-center py-3" style="color:#94a3b8"><i class="bi bi-hourglass-split"></i> Loading...</div>';
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    try {
+        const res = await fetch(`/api/tms/shipments/${shipmentId}/events`);
+        const events = await res.json();
+        if (!events.length) {
+            content.innerHTML = '<p style="color:#64748b;text-align:center;padding:24px">No events recorded yet.</p>';
+            return;
+        }
+        const statusIcons = {
+            'SHIPMENT_CREATED': 'bi-box-seam',
+            'PICKUP_PENDING': 'bi-clock',
+            'PICKED_UP': 'bi-person-check',
+            'IN_TRANSIT': 'bi-truck',
+            'ARRIVED_AT_HUB': 'bi-building',
+            'OUT_FOR_DELIVERY': 'bi-bicycle',
+            'DELIVERED': 'bi-check-circle',
+            'EXCEPTION': 'bi-exclamation-triangle',
+        };
+        let html = '<div class="event-timeline">';
+        events.forEach(ev => {
+            const icon = statusIcons[ev.event_type] || 'bi-circle';
+            html += `
+            <div class="event-item">
+                <div class="event-dot"><i class="bi ${icon}"></i></div>
+                <div class="event-type">${ev.event_type.replace(/_/g,' ')}</div>
+                ${ev.location ? `<div class="event-loc"><i class="bi bi-geo-alt"></i> ${ev.location}</div>` : ''}
+                ${ev.description ? `<div class="event-loc">${ev.description}</div>` : ''}
+                <div class="event-time">${ev.event_time}</div>
+            </div>`;
+        });
+        html += '</div>';
+        content.innerHTML = html;
+    } catch(e) {
+        content.innerHTML = '<p style="color:#dc2626">Failed to load events.</p>';
+    }
+}
+
+// ── Tracking search ───────────────────────────────────────────────────────────
+async function trackShipment() {
+    const trackNo = document.getElementById('trackInput').value.trim();
+    const resultDiv = document.getElementById('trackingResult');
+    if (!trackNo) { alert('Enter a tracking number'); return; }
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<div style="color:#94a3b8"><i class="bi bi-hourglass-split"></i> Tracking...</div>';
+    try {
+        const res = await fetch(`/api/tms/tracking/${encodeURIComponent(trackNo)}`);
+        if (!res.ok) {
+            resultDiv.innerHTML = '<div style="color:#f87171"><i class="bi bi-x-circle"></i> Tracking number not found.</div>';
+            return;
+        }
+        const data = await res.json();
+        const statusColor = { 'DELIVERED': '#4ade80', 'IN_TRANSIT': '#60a5fa', 'PICKED_UP': '#60a5fa' }[data.status] || '#fbbf24';
+        let evHtml = '';
+        (data.events || []).forEach(ev => {
+            evHtml += `<div style="border-left:2px solid rgba(249,115,22,0.4);padding:8px 12px;margin-bottom:8px">
+                <div style="font-weight:600;font-size:0.82rem;color:#f97316">${ev.event_type.replace(/_/g,' ')}</div>
+                ${ev.location ? `<div style="font-size:0.78rem;color:#94a3b8">${ev.location}</div>` : ''}
+                ${ev.description ? `<div style="font-size:0.78rem;color:#64748b">${ev.description}</div>` : ''}
+                <div style="font-size:0.75rem;color:#475569">${ev.event_time}</div>
+            </div>`;
+        });
+        resultDiv.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div>
+                    <div style="font-size:0.8rem;color:#64748b">Tracking Number</div>
+                    <code style="color:#f97316">${data.tracking_number}</code>
+                </div>
+                <div style="color:${statusColor};font-weight:700;font-size:1.1rem">${data.status.replace(/_/g,' ')}</div>
+            </div>
+            <div style="font-size:0.82rem;color:#94a3b8;margin-bottom:12px">
+                Courier: ${data.courier} &nbsp;|&nbsp; ETA: ${data.eta || 'N/A'}
+                ${data.delivered_at ? ` &nbsp;|&nbsp; Delivered: ${data.delivered_at.split('T')[0]}` : ''}
+            </div>
+            ${evHtml || '<p style="color:#475569;font-size:0.82rem">No events yet.</p>'}
+        `;
+    } catch(e) {
+        resultDiv.innerHTML = '<div style="color:#f87171">Error fetching tracking data.</div>';
+    }
+}
+
+document.getElementById('trackInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') trackShipment();
+});
+</script>
+</body>
+</html>

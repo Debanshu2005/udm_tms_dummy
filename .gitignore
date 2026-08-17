@@ -1,0 +1,34 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment secrets — NEVER commit
+.env
+*.env.local
+
+# Databases — companion_data.db is included (seed data)
+# but stale/dev databases are excluded
+cache.db
+technician.db
+your_database.db
+*.db.bak
+
+# Vercel build output
+.vercel/
+
+# AI agent / workspace files — not part of the project
+workspacememory.md
+workspace.json
+graphify-out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+.vercel
