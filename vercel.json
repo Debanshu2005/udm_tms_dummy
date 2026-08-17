@@ -1,0 +1,22 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python",
+      "config": {
+        "excludeFiles": "{__pycache__/**,*.pyc,cache.db,technician.db,your_database.db,tms/__pycache__/**,udm/__pycache__/**}"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/app.py"
+    }
+  ]
+}

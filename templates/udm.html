@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UDM — Unified Data Management | RailQR</title>
+    <meta name="description" content="Unified Data Management portal for Indian Railways — component digital records, warranty tracking, lifecycle management, and inspection history.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; padding-bottom: 60px; }
+        .udm-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+            border-bottom: 1px solid rgba(59,130,246,0.2);
+            padding: 32px 0; margin-bottom: 32px;
+        }
+        .udm-header h1 { font-weight: 800; font-size: 2rem; }
+        .udm-header h1 span { color: #60a5fa; }
+        .udm-header p { color: #94a3b8; margin: 0; }
+        .stat-pill {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px 24px; transition: all 0.25s;
+        }
+        .stat-pill:hover { transform: translateY(-3px); }
+        .stat-pill .num { font-size: 2rem; font-weight: 800; }
+        .stat-pill .lbl { color: #64748b; font-size: 0.82rem; margin-top: 2px; }
+        .nav-dark .nav-link {
+            color: #64748b; border-radius: 10px; padding: 8px 18px;
+            font-weight: 500; transition: all 0.2s;
+        }
+        .nav-dark .nav-link.active,
+        .nav-dark .nav-link:hover { color: #60a5fa; background: rgba(59,130,246,0.1); }
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px; overflow: hidden;
+        }
+        .panel-header {
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 16px 24px; font-weight: 600;
+        }
+        .panel-body { padding: 20px 24px; }
+        table { color: #e2e8f0; }
+        .table > :not(caption) > * > * { background: transparent; color: #e2e8f0; border-color: rgba(255,255,255,0.07); }
+        .table thead th { background: rgba(59,130,246,0.15) !important; color: #60a5fa; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; }
+        .table tbody tr:hover > td { background: rgba(255,255,255,0.04); }
+        .risk-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+        .risk-high { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+        .risk-medium { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
+        .risk-low { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
+        .warranty-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.78rem; font-weight: 600; }
+        .w-active { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
+        .w-expiring { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
+        .w-expired { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+        .w-unknown { background: rgba(148,163,184,0.1); color: #64748b; border: 1px solid rgba(148,163,184,0.2); }
+        .lifecycle-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.74rem; font-weight: 700; }
+        .lc-registered { background: rgba(148,163,184,0.12); color: #94a3b8; }
+        .lc-listed { background: rgba(59,130,246,0.15); color: #60a5fa; }
+        .lc-purchased, .lc-packed { background: rgba(139,92,246,0.15); color: #a78bfa; }
+        .lc-shipped, .lc-in_transit { background: rgba(249,115,22,0.15); color: #fb923c; }
+        .lc-delivered, .lc-installed, .lc-assigned { background: rgba(22,163,74,0.15); color: #4ade80; }
+        .lc-maintenance, .lc-reinspection { background: rgba(234,179,8,0.15); color: #fbbf24; }
+        .lc-retired { background: rgba(220,38,38,0.15); color: #f87171; }
+        .chart-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; }
+        .alert-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; }
+        .alert-warning-dark { background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.2); }
+        .alert-danger-dark { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.2); }
+        .event-timeline { border-left: 2px solid rgba(59,130,246,0.3); padding-left: 20px; }
+        .event-entry { position: relative; margin-bottom: 16px; }
+        .event-entry::before { content: ''; position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; border: 2px solid #1e3a5f; }
+        .event-entry .ev-type { font-size: 0.82rem; font-weight: 700; color: #60a5fa; }
+        .event-entry .ev-desc { font-size: 0.8rem; color: #94a3b8; }
+        .event-entry .ev-time { font-size: 0.75rem; color: #475569; }
+        .back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; }
+        .back-link:hover { color: #93c5fd; }
+        .empty-state { text-align: center; padding: 48px 24px; color: #475569; }
+        .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; }
+        .btn-outline-blue { background: transparent; color: #60a5fa; border: 1px solid rgba(59,130,246,0.4); border-radius: 8px; padding: 6px 16px; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; text-decoration: none; }
+        .btn-outline-blue:hover { background: rgba(59,130,246,0.1); color: #60a5fa; }
+        .form-control-dark { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0; border-radius: 10px; }
+        .form-control-dark:focus { background: rgba(255,255,255,0.1); border-color: #3b82f6; color: #e2e8f0; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+        .form-control-dark::placeholder { color: #475569; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="udm-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <a href="/" class="back-link mb-2 d-inline-flex align-items-center gap-1">
+                    <i class="bi bi-arrow-left"></i> Portal Home
+                </a>
+                <h1 class="mb-1">UDM — <span>Unified Data Management</span></h1>
+                <p>Component digital records · Warranty tracking · Lifecycle management</p>
+            </div>
+            <div class="text-end">
+                <a href="{{ gaugemarket_url }}" target="_blank" class="btn-outline-blue">
+                    <i class="bi bi-box-arrow-up-right"></i> GaugeMarket
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Stats row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num text-primary">{{ rows|length }}</div>
+                <div class="lbl">Total Components</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num" style="color:#4ade80">{{ warranty_counts.ACTIVE }}</div>
+                <div class="lbl">Active Warranty</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num text-warning">{{ warranty_counts.EXPIRING_SOON }}</div>
+                <div class="lbl">Expiring Soon</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-pill">
+                <div class="num text-danger">{{ high_risk_vendors|length }}</div>
+                <div class="lbl">High-Risk Vendors</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation tabs -->
+    <ul class="nav nav-dark mb-4" id="udmTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-dashboard" type="button">
+                <i class="bi bi-grid"></i> Dashboard
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-warranty" type="button">
+                <i class="bi bi-shield-check"></i> Warranty
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-lifecycle" type="button">
+                <i class="bi bi-arrow-repeat"></i> Lifecycle
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-vendors" type="button">
+                <i class="bi bi-building"></i> Vendors
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-activity" type="button">
+                <i class="bi bi-clock-history"></i> Activity
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="udmTabsContent">
+
+        <!-- ── Tab: Dashboard ─────────────────────────────────────────────── -->
+        <div class="tab-pane fade show active" id="tab-dashboard">
+            <!-- Alert banners -->
+            {% if expiring_warranty %}
+            <div class="alert-item alert-warning-dark mb-3">
+                <i class="bi bi-exclamation-triangle" style="color:#fbbf24;font-size:1.2rem;flex-shrink:0;margin-top:2px"></i>
+                <div>
+                    <strong style="font-size:0.9rem">{{ expiring_warranty|length }} Warranties Expiring Within 90 Days</strong>
+                    <div style="font-size:0.82rem;color:#94a3b8">
+                        {% for r in expiring_warranty[:3] %}{{ r.uid }}{% if not loop.last %}, {% endif %}{% endfor %}
+                        {% if expiring_warranty|length > 3 %} and {{ expiring_warranty|length - 3 }} more...{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if upcoming_inspections %}
+            <div class="alert-item alert-danger-dark mb-3">
+                <i class="bi bi-calendar-check" style="color:#f87171;font-size:1.2rem;flex-shrink:0;margin-top:2px"></i>
+                <div>
+                    <strong style="font-size:0.9rem">{{ upcoming_inspections|length }} Inspections Due Within 30 Days</strong>
+                    <div style="font-size:0.82rem;color:#94a3b8">Review the inspection schedule and dispatch technicians.</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Search -->
+            <div class="mb-3 d-flex gap-2">
+                <input type="text" id="searchInput" class="form-control form-control-dark" placeholder="Search by UID, component type, or vendor…" style="max-width:400px">
+                <button class="btn-outline-blue" onclick="filterTable()"><i class="bi bi-search"></i></button>
+            </div>
+
+            <!-- Components table -->
+            <div class="panel">
+                <div class="panel-header d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-database-check me-2" style="color:#60a5fa"></i>Component Registry</span>
+                    <span class="badge" style="background:rgba(59,130,246,0.15);color:#60a5fa">{{ rows|length }} records</span>
+                </div>
+                <div class="panel-body p-0">
+                    {% if rows %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="componentsTable">
+                            <thead>
+                                <tr>
+                                    <th>UID</th>
+                                    <th>Component</th>
+                                    <th>Vendor</th>
+                                    <th>Supply Date</th>
+                                    <th>Warranty End</th>
+                                    <th>Next Inspection</th>
+                                    <th>Lifecycle</th>
+                                    <th>Vendor Risk</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in rows %}
+                                <tr>
+                                    <td><code style="color:#60a5fa;font-size:0.82rem">{{ r.uid }}</code></td>
+                                    <td style="font-size:0.85rem">{{ r.item_type or '—' }}</td>
+                                    <td style="font-size:0.85rem">{{ r.vendor or '—' }}</td>
+                                    <td style="font-size:0.82rem;color:#94a3b8">{{ r.supply_date or '—' }}</td>
+                                    <td>
+                                        {% if r.warranty_status == 'ACTIVE' %}
+                                            <span class="warranty-badge w-active"><i class="bi bi-shield-check"></i> {{ r.warranty_end }}</span>
+                                        {% elif r.warranty_status == 'EXPIRING_SOON' %}
+                                            <span class="warranty-badge w-expiring"><i class="bi bi-exclamation-circle"></i> {{ r.warranty_end }}</span>
+                                        {% elif r.warranty_status == 'EXPIRED' %}
+                                            <span class="warranty-badge w-expired"><i class="bi bi-shield-x"></i> {{ r.warranty_end }}</span>
+                                        {% else %}
+                                            <span class="warranty-badge w-unknown">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if r.next_inspection and r.next_inspection not in ('Not scheduled', 'Invalid date') %}
+                                            <span style="font-size:0.82rem;{% if is_date_soon(r.next_inspection) %}color:#fbbf24;font-weight:600{% else %}color:#94a3b8{% endif %}">
+                                                {{ r.next_inspection }}
+                                                {% if is_date_soon(r.next_inspection) %}<i class="bi bi-calendar-check"></i>{% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span style="color:#475569;font-size:0.82rem">Not scheduled</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% set lc = r.lifecycle_status or 'REGISTERED' %}
+                                        <span class="lifecycle-badge lc-{{ lc|lower }}">{{ lc }}</span>
+                                    </td>
+                                    <td>
+                                        {% if r.vendor_risk == 'High' %}
+                                            <span class="risk-badge risk-high">High</span>
+                                        {% elif r.vendor_risk == 'Medium' %}
+                                            <span class="risk-badge risk-medium">Medium</span>
+                                        {% else %}
+                                            <span class="risk-badge risk-low">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/view/{{ r.uid }}" class="btn-outline-blue">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h5>No components synced yet</h5>
+                        <p style="font-size:0.85rem">Components will appear here once GaugeMarket pushes data to this portal.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Tab: Warranty ──────────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-warranty">
+            <div class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <div class="chart-box">
+                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Warranty Status Distribution</h6>
+                        <canvas id="warrantyChart" height="220"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="panel h-100">
+                        <div class="panel-header"><i class="bi bi-exclamation-circle me-2 text-warning"></i>Expiring Soon</div>
+                        <div class="panel-body">
+                            {% if expiring_warranty %}
+                            {% for r in expiring_warranty %}
+                            <div class="alert-item alert-warning-dark mb-2">
+                                <i class="bi bi-clock-history" style="color:#fbbf24"></i>
+                                <div>
+                                    <strong style="font-size:0.85rem"><code style="color:#60a5fa">{{ r.uid }}</code> — {{ r.item_type or 'Component' }}</strong>
+                                    <div style="font-size:0.8rem;color:#94a3b8">Vendor: {{ r.vendor or '—' }} | Expires: {{ r.warranty_end }}</div>
+                                </div>
+                                <a href="/view/{{ r.uid }}" class="ms-auto btn-outline-blue" style="white-space:nowrap">View</a>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state" style="padding:24px">
+                                <i class="bi bi-shield-check" style="color:#4ade80;font-size:2rem;display:block;margin-bottom:8px"></i>
+                                <p style="margin:0;font-size:0.85rem">No warranties expiring within 90 days.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expired warranties -->
+            {% if warranty_counts.EXPIRED > 0 %}
+            <div class="panel">
+                <div class="panel-header"><i class="bi bi-shield-x me-2 text-danger"></i>Expired Warranties ({{ warranty_counts.EXPIRED }})</div>
+                <div class="panel-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead><tr><th>UID</th><th>Component</th><th>Vendor</th><th>Expired</th><th></th></tr></thead>
+                            <tbody>
+                                {% for r in rows %}
+                                {% if r.warranty_status == 'EXPIRED' %}
+                                <tr>
+                                    <td><code style="color:#60a5fa;font-size:0.82rem">{{ r.uid }}</code></td>
+                                    <td style="font-size:0.85rem">{{ r.item_type or '—' }}</td>
+                                    <td style="font-size:0.85rem">{{ r.vendor or '—' }}</td>
+                                    <td style="font-size:0.82rem;color:#f87171">{{ r.warranty_end }}</td>
+                                    <td><a href="/view/{{ r.uid }}" class="btn-outline-blue">View</a></td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── Tab: Lifecycle ─────────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-lifecycle">
+            <div class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <div class="chart-box">
+                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Lifecycle State Distribution</h6>
+                        <canvas id="lifecycleChart" height="260"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="panel">
+                        <div class="panel-header"><i class="bi bi-arrow-repeat me-2" style="color:#60a5fa"></i>State Breakdown</div>
+                        <div class="panel-body">
+                            {% for state, count in lifecycle_counts.items() %}
+                            <div class="d-flex align-items-center justify-content-between mb-2 p-2"
+                                 style="background:rgba(255,255,255,0.04);border-radius:10px">
+                                <span class="lifecycle-badge lc-{{ state|lower }}">{{ state }}</span>
+                                <div style="flex:1;margin:0 16px">
+                                    <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px">
+                                        <div style="height:4px;background:#3b82f6;border-radius:4px;width:{{ ((count / (rows|length)) * 100)|round|int if rows else 0 }}%"></div>
+                                    </div>
+                                </div>
+                                <span style="font-weight:700;color:#e2e8f0;font-size:0.9rem">{{ count }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Components by lifecycle state -->
+            <div class="panel">
+                <div class="panel-header"><i class="bi bi-table me-2" style="color:#60a5fa"></i>Components by Lifecycle Status</div>
+                <div class="panel-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead><tr><th>UID</th><th>Component</th><th>Vendor</th><th>Lifecycle Status</th><th>Last Sync</th><th></th></tr></thead>
+                            <tbody>
+                                {% for r in rows %}
+                                <tr>
+                                    <td><code style="color:#60a5fa;font-size:0.82rem">{{ r.uid }}</code></td>
+                                    <td style="font-size:0.85rem">{{ r.item_type or '—' }}</td>
+                                    <td style="font-size:0.85rem">{{ r.vendor or '—' }}</td>
+                                    <td>
+                                        {% set lc = r.lifecycle_status or 'REGISTERED' %}
+                                        <span class="lifecycle-badge lc-{{ lc|lower }}">{{ lc }}</span>
+                                    </td>
+                                    <td style="font-size:0.78rem;color:#475569">{{ r.synced_at[:10] if r.synced_at else '—' }}</td>
+                                    <td><a href="/view/{{ r.uid }}" class="btn-outline-blue">View</a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Tab: Vendors ───────────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-vendors">
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="chart-box">
+                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Component Count by Vendor</h6>
+                        <canvas id="vendorChart" height="240"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="panel h-100">
+                        <div class="panel-header"><i class="bi bi-building-exclamation me-2 text-danger"></i>Vendor Risk Overview</div>
+                        <div class="panel-body">
+                            {% if vendor_risk_map %}
+                            {% for v in vendor_risk_map %}
+                            <div class="d-flex align-items-center gap-2 mb-2 p-2"
+                                 style="background:rgba(255,255,255,0.04);border-radius:10px">
+                                <i class="bi bi-building" style="color:{% if v.high > 0 %}#f87171{% else %}#4ade80{% endif %}"></i>
+                                <div style="flex:1">
+                                    <div style="font-size:0.85rem;font-weight:600">{{ v.vendor }}</div>
+                                    <div style="font-size:0.78rem;color:#64748b">{{ v.count }} components, {{ v.high }} high-risk</div>
+                                </div>
+                                {% if v.high > 0 %}
+                                <span class="risk-badge risk-high">High Risk Vendor</span>
+                                {% else %}
+                                <span class="risk-badge risk-low">OK</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state" style="padding:24px">
+                                <i class="bi bi-building" style="font-size:2rem;display:block;margin-bottom:8px;color:#475569"></i>
+                                <p style="margin:0;font-size:0.85rem">No vendor data available yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Tab: Activity Feed ─────────────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-activity">
+            <div class="panel">
+                <div class="panel-header"><i class="bi bi-clock-history me-2" style="color:#60a5fa"></i>Recent Lifecycle Events</div>
+                <div class="panel-body">
+                    {% if recent_events %}
+                    <div class="event-timeline">
+                        {% for ev in recent_events %}
+                        <div class="event-entry">
+                            <div class="ev-type">
+                                <code style="color:#60a5fa;font-size:0.78rem">{{ ev.uid }}</code>
+                                &nbsp;·&nbsp; {{ ev.event_type.replace('_',' ') }}
+                            </div>
+                            {% if ev.description %}
+                            <div class="ev-desc">{{ ev.description }}</div>
+                            {% endif %}
+                            <div class="ev-time">
+                                {{ ev.event_time }} &nbsp;·&nbsp;
+                                <span style="color:#60a5fa">{{ ev.source }}</span>
+                                {% if ev.actor and ev.actor != 'SYSTEM' %}
+                                &nbsp;·&nbsp; {{ ev.actor }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-clock-history"></i>
+                        <h5>No activity yet</h5>
+                        <p style="font-size:0.85rem">Events will appear here as components are synced and updated.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /tab-content -->
+</div><!-- /container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ── Real warranty chart ───────────────────────────────────────────────────────
+const wCtx = document.getElementById('warrantyChart');
+if (wCtx) {
+    new Chart(wCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Active', 'Expiring Soon', 'Expired', 'Unknown'],
+            datasets: [{
+                data: [{{ warranty_counts.ACTIVE }}, {{ warranty_counts.EXPIRING_SOON }}, {{ warranty_counts.EXPIRED }}, {{ warranty_counts.UNKNOWN }}],
+                backgroundColor: ['rgba(22,163,74,0.8)', 'rgba(234,179,8,0.8)', 'rgba(220,38,38,0.8)', 'rgba(100,116,139,0.5)'],
+                borderColor: ['#16a34a', '#eab308', '#dc2626', '#475569'],
+                borderWidth: 1,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 12 } } } },
+            cutout: '62%'
+        }
+    });
+}
+
+// ── Real lifecycle chart ──────────────────────────────────────────────────────
+const lcCtx = document.getElementById('lifecycleChart');
+if (lcCtx) {
+    const lcLabels = [{% for s in lifecycle_counts %}'{{ s }}',{% endfor %}];
+    const lcData = [{% for s, c in lifecycle_counts.items() %}{{ c }},{% endfor %}];
+    const lcColors = lcLabels.map(l => {
+        const map = {
+            'REGISTERED': 'rgba(148,163,184,0.7)',
+            'LISTED': 'rgba(59,130,246,0.7)',
+            'PURCHASED': 'rgba(139,92,246,0.7)',
+            'PACKED': 'rgba(139,92,246,0.6)',
+            'SHIPPED': 'rgba(249,115,22,0.7)',
+            'IN_TRANSIT': 'rgba(249,115,22,0.8)',
+            'DELIVERED': 'rgba(22,163,74,0.8)',
+            'ASSIGNED': 'rgba(22,163,74,0.7)',
+            'INSTALLED': 'rgba(22,163,74,0.6)',
+            'MAINTENANCE': 'rgba(234,179,8,0.7)',
+            'RETIRED': 'rgba(220,38,38,0.7)',
+        };
+        return map[l] || 'rgba(100,116,139,0.5)';
+    });
+    new Chart(lcCtx, {
+        type: 'bar',
+        data: {
+            labels: lcLabels,
+            datasets: [{
+                label: 'Components',
+                data: lcData,
+                backgroundColor: lcColors,
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, ticks: { color: '#64748b', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+// ── Real vendor chart ─────────────────────────────────────────────────────────
+const vCtx = document.getElementById('vendorChart');
+if (vCtx) {
+    const vData = {{ vendor_risk_map | tojson }};
+    new Chart(vCtx, {
+        type: 'bar',
+        data: {
+            labels: vData.map(v => v.vendor),
+            datasets: [{
+                label: 'Components',
+                data: vData.map(v => v.count),
+                backgroundColor: vData.map(v => v.high > 0 ? 'rgba(220,38,38,0.7)' : 'rgba(59,130,246,0.7)'),
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, ticks: { color: '#64748b', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } }
+            }
+        }
+    });
+}
+
+// ── Table filter ──────────────────────────────────────────────────────────────
+function filterTable() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    document.querySelectorAll('#componentsTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+document.getElementById('searchInput')?.addEventListener('input', filterTable);
+</script>
+</body>
+</html>

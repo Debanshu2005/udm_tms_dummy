@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Components — RailQR UDM Portal</title>
+    <meta name="description" content="Full list of railway components tracked in the UDM companion portal.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; padding-bottom: 60px; }
+        .top-bar { background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 14px 0; }
+        .back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; }
+        .back-link:hover { color: #93c5fd; }
+        .page-title { padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 24px; }
+        .panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; }
+        .panel-header { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 14px 20px; font-weight: 600; font-size: 0.9rem; }
+        table { color: #e2e8f0; }
+        .table > :not(caption) > * > * { background: transparent; color: #e2e8f0; border-color: rgba(255,255,255,0.07); }
+        .table thead th { background: rgba(59,130,246,0.15) !important; color: #60a5fa; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; }
+        .table tbody tr { cursor: pointer; transition: background 0.15s; }
+        .table tbody tr:hover > td { background: rgba(255,255,255,0.05); }
+        .risk-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; }
+        .risk-high { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+        .risk-medium { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
+        .risk-low { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
+        .lc-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
+        .lc-registered { background: rgba(148,163,184,0.12); color: #94a3b8; }
+        .lc-listed { background: rgba(59,130,246,0.12); color: #60a5fa; }
+        .lc-shipped,.lc-in_transit { background: rgba(249,115,22,0.12); color: #fb923c; }
+        .lc-delivered,.lc-installed { background: rgba(22,163,74,0.12); color: #4ade80; }
+        .lc-purchased,.lc-packed { background: rgba(139,92,246,0.12); color: #a78bfa; }
+        .lc-retired { background: rgba(220,38,38,0.12); color: #f87171; }
+        .form-control-dark { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 10px; font-size: 0.85rem; }
+        .form-control-dark:focus { background: rgba(255,255,255,0.09); border-color: #3b82f6; color: #e2e8f0; box-shadow: none; }
+        .form-control-dark::placeholder { color: #475569; }
+        .btn-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; text-decoration: none; transition: all 0.2s; }
+        .btn-blue:hover { background: rgba(59,130,246,0.25); color: #60a5fa; }
+        .empty-state { text-align: center; padding: 60px 24px; color: #475569; }
+        .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; }
+        #rowCount { color: #64748b; font-size: 0.82rem; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="container d-flex align-items-center gap-3">
+        <a href="/" class="back-link"><i class="bi bi-arrow-left"></i> Portal Home</a>
+        <span style="color:#334155">|</span>
+        <a href="/udm" class="back-link"><i class="bi bi-database-check"></i> UDM</a>
+        <span style="color:#334155">|</span>
+        <a href="/tms" class="back-link"><i class="bi bi-truck"></i> TMS</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="page-title d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h1 style="font-size:1.6rem;font-weight:800;margin:0">All Components</h1>
+            <div style="color:#64748b;font-size:0.85rem;margin-top:4px">{{ rows|length }} records in UDM registry</div>
+        </div>
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="text" id="searchInput" class="form-control form-control-dark" placeholder="Search UID, type, vendor…" style="width:260px">
+            <span id="rowCount"></span>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2" style="color:#60a5fa"></i>Component Registry</span>
+        </div>
+        {% if rows %}
+        <div class="table-responsive">
+            <table class="table mb-0" id="allTable">
+                <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>Component Type</th>
+                        <th>Vendor</th>
+                        <th>Supply Date</th>
+                        <th>Warranty End</th>
+                        <th>Risk</th>
+                        <th>Next Inspection</th>
+                        <th>Lifecycle</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                    <tr onclick="window.location='/view/{{ row.uid }}'">
+                        <td><code style="color:#60a5fa;font-size:0.8rem">{{ row.uid }}</code></td>
+                        <td style="font-size:0.85rem">{{ row.item_type or '—' }}</td>
+                        <td style="font-size:0.85rem">{{ row.vendor or '—' }}</td>
+                        <td style="font-size:0.8rem;color:#94a3b8">{{ row.supply_date or '—' }}</td>
+                        <td style="font-size:0.8rem;color:{% if row.warranty_status == 'EXPIRED' %}#f87171{% elif row.warranty_status == 'EXPIRING_SOON' %}#fbbf24{% else %}#4ade80{% endif %}">
+                            {{ row.warranty_end or '—' }}
+                        </td>
+                        <td>
+                            {% if row.risk == 'High' %}<span class="risk-badge risk-high">High</span>
+                            {% elif row.risk == 'Medium' %}<span class="risk-badge risk-medium">Medium</span>
+                            {% else %}<span class="risk-badge risk-low">Low</span>{% endif %}
+                        </td>
+                        <td style="font-size:0.8rem;color:#94a3b8">{{ row.next_inspection or 'Not scheduled' }}</td>
+                        <td>
+                            {% set lc = row.lifecycle_status or 'REGISTERED' %}
+                            <span class="lc-badge lc-{{ lc|lower }}">{{ lc }}</span>
+                        </td>
+                        <td>
+                            <a href="/view/{{ row.uid }}" class="btn-blue" onclick="event.stopPropagation()">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h5>No components synced yet</h5>
+            <p style="font-size:0.85rem">Components will appear here once GaugeMarket starts pushing data.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const input = document.getElementById('searchInput');
+const countEl = document.getElementById('rowCount');
+function filterTable() {
+    const q = input.value.toLowerCase();
+    let visible = 0;
+    document.querySelectorAll('#allTable tbody tr').forEach(row => {
+        const show = row.textContent.toLowerCase().includes(q);
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    countEl.textContent = q ? `${visible} match${visible !== 1 ? 'es' : ''}` : '';
+}
+input?.addEventListener('input', filterTable);
+</script>
+</body>
+</html>

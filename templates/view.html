@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Details — {{ row.uid }} | RailQR UDM</title>
+    <meta name="description" content="Full digital record for railway component {{ row.uid }} — lifecycle, warranty, inspections, and traceability.">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; padding-bottom: 60px; }
+        .top-bar {
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 14px 0;
+        }
+        .back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; }
+        .back-link:hover { color: #93c5fd; }
+        .uid-hero {
+            background: linear-gradient(135deg, #0f172a, #1e3a5f);
+            border-bottom: 1px solid rgba(59,130,246,0.2);
+            padding: 32px 0 28px;
+        }
+        .uid-badge { font-family: monospace; font-size: 1.6rem; font-weight: 800; color: #60a5fa; }
+        .lifecycle-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 16px; border-radius: 100px; font-size: 0.82rem; font-weight: 700;
+        }
+        .lc-registered { background: rgba(148,163,184,0.12); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
+        .lc-listed { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+        .lc-purchased,.lc-packed { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
+        .lc-shipped,.lc-in_transit { background: rgba(249,115,22,0.15); color: #fb923c; border: 1px solid rgba(249,115,22,0.25); }
+        .lc-delivered,.lc-installed,.lc-assigned { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
+        .lc-maintenance,.lc-reinspection { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
+        .lc-retired { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+        .panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 16px; overflow: hidden; margin-bottom: 20px;
+        }
+        .panel-header {
+            background: rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            padding: 14px 20px; font-weight: 600; font-size: 0.9rem;
+        }
+        .panel-body { padding: 20px; }
+        .field-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .field-row:last-child { border-bottom: none; }
+        .field-label { color: #64748b; font-size: 0.82rem; font-weight: 500; min-width: 160px; }
+        .field-value { color: #e2e8f0; font-size: 0.88rem; text-align: right; flex: 1; }
+        .risk-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.76rem; font-weight: 700; }
+        .risk-high { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
+        .risk-medium { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
+        .risk-low { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
+        .warranty-active { color: #4ade80; }
+        .warranty-expiring { color: #fbbf24; }
+        .warranty-expired { color: #f87171; }
+        .event-timeline { border-left: 2px solid rgba(59,130,246,0.3); padding-left: 20px; }
+        .event-entry { position: relative; margin-bottom: 16px; }
+        .event-entry::before { content: ''; position: absolute; left: -26px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; border: 2px solid #0f172a; }
+        .event-entry .ev-type { font-size: 0.82rem; font-weight: 700; color: #60a5fa; }
+        .event-entry .ev-desc { font-size: 0.8rem; color: #94a3b8; }
+        .event-entry .ev-time { font-size: 0.74rem; color: #475569; }
+        .insp-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+        .insp-card .sev-high { color: #f87171; }
+        .insp-card .sev-medium { color: #fbbf24; }
+        .insp-card .sev-low { color: #4ade80; }
+        .btn-back { background: rgba(255,255,255,0.06); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; padding: 8px 20px; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+        .btn-back:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+    </style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div class="container d-flex align-items-center gap-3">
+        <a href="/all" class="back-link"><i class="bi bi-arrow-left"></i> All Records</a>
+        <span style="color:#334155">|</span>
+        <a href="/" class="back-link"><i class="bi bi-house"></i> Portal Home</a>
+    </div>
+</div>
+
+<div class="uid-hero">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <div style="color:#64748b;font-size:0.8rem;margin-bottom:4px">Component UID</div>
+                <div class="uid-badge">{{ row.uid }}</div>
+                <div style="color:#94a3b8;font-size:0.85rem;margin-top:6px">{{ row.item_type or 'Unknown Type' }} — {{ row.vendor or 'Unknown Vendor' }}</div>
+            </div>
+            <div class="d-flex flex-column align-items-end gap-2">
+                {% set lc = row.lifecycle_status or 'REGISTERED' %}
+                <span class="lifecycle-pill lc-{{ lc|lower }}">
+                    <i class="bi bi-arrow-repeat"></i> {{ lc }}
+                </span>
+                {% if row.warranty_status == 'ACTIVE' %}
+                    <span style="font-size:0.8rem;color:#4ade80"><i class="bi bi-shield-check"></i> Warranty Active</span>
+                {% elif row.warranty_status == 'EXPIRING_SOON' %}
+                    <span style="font-size:0.8rem;color:#fbbf24"><i class="bi bi-exclamation-circle"></i> Warranty Expiring Soon</span>
+                {% elif row.warranty_status == 'EXPIRED' %}
+                    <span style="font-size:0.8rem;color:#f87171"><i class="bi bi-shield-x"></i> Warranty Expired</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row g-4">
+
+        <!-- Left column: Component data -->
+        <div class="col-lg-7">
+
+            <!-- Core fields -->
+            <div class="panel">
+                <div class="panel-header"><i class="bi bi-database me-2" style="color:#60a5fa"></i>Component Data</div>
+                <div class="panel-body">
+                    <div class="field-row">
+                        <span class="field-label">Item Type</span>
+                        <span class="field-value">{{ row.item_type or '—' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Vendor</span>
+                        <span class="field-value">{{ row.vendor or '—' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Lot Number</span>
+                        <span class="field-value">{{ row.lot or '—' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Manufacture Date</span>
+                        <span class="field-value">{{ row.manufactor_date or '—' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Manufacture Number</span>
+                        <span class="field-value">{{ row.manufactor_number or '—' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Supply Date</span>
+                        <span class="field-value">{{ row.supply_date or '—' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Warranty End</span>
+                        <span class="field-value {% if row.warranty_status == 'ACTIVE' %}warranty-active{% elif row.warranty_status == 'EXPIRING_SOON' %}warranty-expiring{% elif row.warranty_status == 'EXPIRED' %}warranty-expired{% endif %}">
+                            {{ row.warranty_end or '—' }}
+                        </span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Last Repair Date</span>
+                        <span class="field-value">{{ row.repair_date or '—' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Next Inspection</span>
+                        <span class="field-value">{{ row.next_inspection or 'Not scheduled' }}</span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Notes</span>
+                        <span class="field-value" style="max-width:260px;word-break:break-word">{{ row.notes or '—' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk -->
+            <div class="panel">
+                <div class="panel-header"><i class="bi bi-shield-exclamation me-2" style="color:#f97316"></i>Risk Assessment</div>
+                <div class="panel-body">
+                    <div class="field-row">
+                        <span class="field-label">Asset Risk Level</span>
+                        <span class="field-value">
+                            {% if row.risk == 'High' %}
+                                <span class="risk-badge risk-high"><i class="bi bi-exclamation-triangle"></i> High</span>
+                            {% elif row.risk == 'Medium' %}
+                                <span class="risk-badge risk-medium"><i class="bi bi-info-circle"></i> Medium</span>
+                            {% else %}
+                                <span class="risk-badge risk-low"><i class="bi bi-check-circle"></i> Low</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Vendor Risk Level</span>
+                        <span class="field-value">
+                            {% if row.vendor_risk == 'High' %}
+                                <span class="risk-badge risk-high">High</span>
+                            {% elif row.vendor_risk == 'Medium' %}
+                                <span class="risk-badge risk-medium">Medium</span>
+                            {% else %}
+                                <span class="risk-badge risk-low">Low</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Lifecycle Status</span>
+                        <span class="field-value">
+                            {% set lc = row.lifecycle_status or 'REGISTERED' %}
+                            <span class="lifecycle-pill lc-{{ lc|lower }}" style="font-size:0.78rem;padding:3px 10px">{{ lc }}</span>
+                        </span>
+                    </div>
+                    <div class="field-row">
+                        <span class="field-label">Last UDM Sync</span>
+                        <span class="field-value" style="color:#64748b">{{ row.synced_at or '—' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right column: Timeline + Inspections -->
+        <div class="col-lg-5">
+
+            <!-- Lifecycle events -->
+            <div class="panel">
+                <div class="panel-header">
+                    <i class="bi bi-clock-history me-2" style="color:#60a5fa"></i>Lifecycle Timeline
+                    <span class="ms-2" style="color:#475569;font-size:0.78rem">({{ events|length }} events)</span>
+                </div>
+                <div class="panel-body">
+                    {% if events %}
+                    <div class="event-timeline">
+                        {% for ev in events %}
+                        <div class="event-entry">
+                            <div class="ev-type">{{ ev.event_type.replace('_', ' ') }}</div>
+                            {% if ev.description %}<div class="ev-desc">{{ ev.description }}</div>{% endif %}
+                            <div class="ev-time">
+                                {{ ev.event_time }}
+                                {% if ev.source %} · <span style="color:#3b82f6">{{ ev.source }}</span>{% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div style="text-align:center;padding:24px;color:#475569">
+                        <i class="bi bi-clock" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+                        <p style="margin:0;font-size:0.85rem">No lifecycle events recorded yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Inspections -->
+            <div class="panel">
+                <div class="panel-header">
+                    <i class="bi bi-clipboard-check me-2" style="color:#f97316"></i>Inspection History
+                    <span class="ms-2" style="color:#475569;font-size:0.78rem">({{ inspections|length }})</span>
+                </div>
+                <div class="panel-body">
+                    {% if inspections %}
+                    {% for insp in inspections %}
+                    <div class="insp-card">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <span style="font-size:0.82rem;font-weight:600">{{ insp.inspection_date[:10] if insp.inspection_date else '—' }}</span>
+                            <span class="risk-badge {% if insp.severity == 'High' %}risk-high{% elif insp.severity == 'Medium' %}risk-medium{% else %}risk-low{% endif %}">
+                                {{ insp.severity or 'Low' }}
+                            </span>
+                        </div>
+                        {% if insp.condition %}<div style="font-size:0.8rem;color:#94a3b8">{{ insp.condition }}</div>{% endif %}
+                        {% if insp.technician %}<div style="font-size:0.76rem;color:#475569">By: {{ insp.technician }}</div>{% endif %}
+                        {% if insp.observations %}<div style="font-size:0.78rem;color:#64748b;margin-top:4px">{{ insp.observations }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div style="text-align:center;padding:24px;color:#475569">
+                        <i class="bi bi-clipboard" style="font-size:2rem;display:block;margin-bottom:8px"></i>
+                        <p style="margin:0;font-size:0.85rem">No inspections recorded yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /row -->
+
+    <!-- Actions -->
+    <div class="d-flex gap-3 mt-2">
+        <a href="/all" class="btn-back"><i class="bi bi-arrow-left"></i> All Records</a>
+        <a href="/udm" class="btn-back"><i class="bi bi-database-check"></i> UDM Portal</a>
+        <a href="/tms" class="btn-back"><i class="bi bi-truck"></i> TMS Portal</a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
