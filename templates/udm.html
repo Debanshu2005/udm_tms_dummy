@@ -3,94 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UDM — Unified Data Management | RailQR</title>
+    <title>UDM — Unified Data Management | Indian Railways</title>
     <meta name="description" content="Unified Data Management portal for Indian Railways — component digital records, warranty tracking, lifecycle management, and inspection history.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; padding-bottom: 60px; }
+        :root {
+            --ir-blue: #1a3a6b;
+            --ir-blue-dark: #0f2342;
+            --ir-saffron: #f97316;
+            --ir-green: #16a34a;
+            --ir-light-gray: #f8f9fa;
+        }
+        body { font-family: 'Inter', sans-serif; background: #eef2f6; color: #334155; padding-bottom: 60px; }
+        
+        .govt-bar {
+            background: #ffffff; border-bottom: 2px solid var(--ir-saffron);
+            padding: 4px 0; font-size: 0.8rem; color: #475569; font-weight: 600;
+        }
+        .govt-bar .d-flex { gap: 16px; }
+
         .udm-header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
-            border-bottom: 1px solid rgba(59,130,246,0.2);
-            padding: 32px 0; margin-bottom: 32px;
+            background: linear-gradient(rgba(26, 58, 107, 0.9), rgba(15, 35, 66, 0.95)), url('/static/rail.jpg') center/cover no-repeat;
+            padding: 40px 0; margin-bottom: 32px; color: #ffffff;
+            border-bottom: 4px solid var(--ir-blue);
+            position: relative;
         }
         .udm-header h1 { font-weight: 800; font-size: 2rem; }
         .udm-header h1 span { color: #60a5fa; }
-        .udm-header p { color: #94a3b8; margin: 0; }
+        .udm-header p { color: #cbd5e1; margin: 0; }
+        
+        .azadi-logo {
+            position: absolute; top: 15px; right: 20px; height: 60px;
+            background: #fff; padding: 4px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
         .stat-pill {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px; padding: 20px 24px; transition: all 0.25s;
+            background: #ffffff; border: 1px solid #e2e8f0;
+            border-bottom: 3px solid var(--ir-blue); border-radius: 12px;
+            padding: 20px 24px; transition: all 0.25s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-        .stat-pill:hover { transform: translateY(-3px); }
+        .stat-pill:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .stat-pill .num { font-size: 2rem; font-weight: 800; }
-        .stat-pill .lbl { color: #64748b; font-size: 0.82rem; margin-top: 2px; }
-        .nav-dark .nav-link {
-            color: #64748b; border-radius: 10px; padding: 8px 18px;
-            font-weight: 500; transition: all 0.2s;
+        .stat-pill .lbl { color: #64748b; font-size: 0.82rem; margin-top: 2px; font-weight: 600; text-transform: uppercase; }
+        
+        .nav-light .nav-link {
+            color: #475569; border-radius: 8px; padding: 10px 20px;
+            font-weight: 600; transition: all 0.2s; border: 1px solid transparent;
         }
-        .nav-dark .nav-link.active,
-        .nav-dark .nav-link:hover { color: #60a5fa; background: rgba(59,130,246,0.1); }
+        .nav-light .nav-link.active, .nav-light .nav-link:hover { 
+            color: var(--ir-blue); background: #ffffff; border-color: #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
         .panel {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.07);
-            border-radius: 16px; overflow: hidden;
+            background: #ffffff; border: 1px solid #e2e8f0;
+            border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
         .panel-header {
-            background: rgba(255,255,255,0.04);
-            border-bottom: 1px solid rgba(255,255,255,0.07);
-            padding: 16px 24px; font-weight: 600;
+            background: var(--ir-light-gray); border-bottom: 1px solid #e2e8f0;
+            padding: 16px 24px; font-weight: 700; color: var(--ir-blue-dark);
         }
         .panel-body { padding: 20px 24px; }
-        table { color: #e2e8f0; }
-        .table > :not(caption) > * > * { background: transparent; color: #e2e8f0; border-color: rgba(255,255,255,0.07); }
-        .table thead th { background: rgba(59,130,246,0.15) !important; color: #60a5fa; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; }
-        .table tbody tr:hover > td { background: rgba(255,255,255,0.04); }
-        .risk-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
-        .risk-high { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
-        .risk-medium { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
-        .risk-low { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
-        .warranty-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.78rem; font-weight: 600; }
-        .w-active { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
-        .w-expiring { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
-        .w-expired { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
-        .w-unknown { background: rgba(148,163,184,0.1); color: #64748b; border: 1px solid rgba(148,163,184,0.2); }
-        .lifecycle-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.74rem; font-weight: 700; }
-        .lc-registered { background: rgba(148,163,184,0.12); color: #94a3b8; }
-        .lc-listed { background: rgba(59,130,246,0.15); color: #60a5fa; }
-        .lc-purchased, .lc-packed { background: rgba(139,92,246,0.15); color: #a78bfa; }
-        .lc-shipped, .lc-in_transit { background: rgba(249,115,22,0.15); color: #fb923c; }
-        .lc-delivered, .lc-installed, .lc-assigned { background: rgba(22,163,74,0.15); color: #4ade80; }
-        .lc-maintenance, .lc-reinspection { background: rgba(234,179,8,0.15); color: #fbbf24; }
-        .lc-retired { background: rgba(220,38,38,0.15); color: #f87171; }
-        .chart-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 20px; }
-        .alert-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-radius: 12px; margin-bottom: 10px; }
-        .alert-warning-dark { background: rgba(234,179,8,0.08); border: 1px solid rgba(234,179,8,0.2); }
-        .alert-danger-dark { background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.2); }
-        .event-timeline { border-left: 2px solid rgba(59,130,246,0.3); padding-left: 20px; }
+        
+        .table { color: #334155; }
+        .table thead th { background: #f1f5f9 !important; color: var(--ir-blue); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; }
+        .table tbody tr:hover > td { background: #f8f9fa; }
+        
+        .risk-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+        .risk-high { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .risk-medium { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .risk-low { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; }
+        
+        .warranty-badge { padding: 4px 12px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; }
+        .w-active { background: #dcfce7; color: #16a34a; border: 1px solid #86efac; }
+        .w-expiring { background: #fef3c7; color: #d97706; border: 1px solid #fcd34d; }
+        .w-expired { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+        .w-unknown { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+        
+        .lifecycle-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid transparent; }
+        .lc-registered { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+        .lc-listed { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        .lc-purchased, .lc-packed { background: #f3e8ff; color: #9333ea; border-color: #d8b4fe; }
+        .lc-shipped, .lc-in_transit { background: #ffedd5; color: #ea580c; border-color: #fdba74; }
+        .lc-delivered, .lc-installed, .lc-assigned { background: #dcfce7; color: #16a34a; border-color: #86efac; }
+        .lc-maintenance, .lc-reinspection { background: #fef3c7; color: #d97706; border-color: #fcd34d; }
+        .lc-retired { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+        
+        .chart-box { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .alert-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; border-radius: 8px; margin-bottom: 10px; }
+        .alert-warning-light { background: #fffbeb; border: 1px solid #fde68a; }
+        .alert-danger-light { background: #fef2f2; border: 1px solid #fecaca; }
+        
+        .event-timeline { border-left: 2px solid #bfdbfe; padding-left: 20px; }
         .event-entry { position: relative; margin-bottom: 16px; }
-        .event-entry::before { content: ''; position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #3b82f6; border: 2px solid #1e3a5f; }
-        .event-entry .ev-type { font-size: 0.82rem; font-weight: 700; color: #60a5fa; }
-        .event-entry .ev-desc { font-size: 0.8rem; color: #94a3b8; }
-        .event-entry .ev-time { font-size: 0.75rem; color: #475569; }
-        .back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; }
-        .back-link:hover { color: #93c5fd; }
-        .empty-state { text-align: center; padding: 48px 24px; color: #475569; }
-        .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; }
-        .btn-outline-blue { background: transparent; color: #60a5fa; border: 1px solid rgba(59,130,246,0.4); border-radius: 8px; padding: 6px 16px; font-size: 0.82rem; font-weight: 600; transition: all 0.2s; text-decoration: none; }
-        .btn-outline-blue:hover { background: rgba(59,130,246,0.1); color: #60a5fa; }
-        .form-control-dark { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); color: #e2e8f0; border-radius: 10px; }
-        .form-control-dark:focus { background: rgba(255,255,255,0.1); border-color: #3b82f6; color: #e2e8f0; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-        .form-control-dark::placeholder { color: #475569; }
+        .event-entry::before { content: ''; position: absolute; left: -26px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: var(--ir-blue); border: 2px solid #ffffff; box-shadow: 0 0 0 1px var(--ir-blue); }
+        .event-entry .ev-type { font-size: 0.85rem; font-weight: 700; color: var(--ir-blue); }
+        .event-entry .ev-desc { font-size: 0.85rem; color: #475569; }
+        .event-entry .ev-time { font-size: 0.75rem; color: #64748b; }
+        
+        .back-link { color: #93c5fd; text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+        .back-link:hover { color: #ffffff; text-decoration: underline; }
+        .empty-state { text-align: center; padding: 48px 24px; color: #64748b; }
+        .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; color: #cbd5e1; }
+        
+        .btn-outline-blue { background: #ffffff; color: var(--ir-blue); border: 1px solid var(--ir-blue); border-radius: 8px; padding: 6px 16px; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; text-decoration: none; display: inline-block; }
+        .btn-outline-blue:hover { background: var(--ir-blue); color: #ffffff; }
+        
+        .btn-header { background: rgba(255,255,255,0.1); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; text-decoration: none; }
+        .btn-header:hover { background: rgba(255,255,255,0.25); color: #ffffff; }
+
+        .form-control-light { background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 8px; }
+        .form-control-light:focus { border-color: var(--ir-blue); box-shadow: 0 0 0 3px rgba(26, 58, 107, 0.15); }
     </style>
 </head>
 <body>
 
+<div class="govt-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <span><i class="bi bi-bank"></i> भारत सरकार | GOVERNMENT OF INDIA</span>
+        </div>
+        <div class="d-flex align-items-center">
+            <span>रेल मंत्रालय | MINISTRY OF RAILWAYS</span>
+        </div>
+    </div>
+</div>
+
 <!-- Header -->
 <div class="udm-header">
-    <div class="container">
+    <div class="container position-relative">
+        <img src="/static/aazadi.jpg" alt="Azadi Ka Amrit Mahotsav" class="azadi-logo d-none d-md-block">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <a href="/" class="back-link mb-2 d-inline-flex align-items-center gap-1">
@@ -100,7 +145,7 @@
                 <p>Component digital records · Warranty tracking · Lifecycle management</p>
             </div>
             <div class="text-end">
-                <a href="{{ gaugemarket_url }}" target="_blank" class="btn-outline-blue">
+                <a href="{{ gaugemarket_url }}" target="_blank" class="btn-header">
                     <i class="bi bi-box-arrow-up-right"></i> GaugeMarket
                 </a>
             </div>
@@ -120,7 +165,7 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-pill">
-                <div class="num" style="color:#4ade80">{{ warranty_counts.ACTIVE }}</div>
+                <div class="num" style="color:#16a34a">{{ warranty_counts.ACTIVE }}</div>
                 <div class="lbl">Active Warranty</div>
             </div>
         </div>
@@ -139,7 +184,7 @@
     </div>
 
     <!-- Navigation tabs -->
-    <ul class="nav nav-dark mb-4" id="udmTabs" role="tablist">
+    <ul class="nav nav-light mb-4 gap-2" id="udmTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-dashboard" type="button">
                 <i class="bi bi-grid"></i> Dashboard
@@ -173,11 +218,11 @@
         <div class="tab-pane fade show active" id="tab-dashboard">
             <!-- Alert banners -->
             {% if expiring_warranty %}
-            <div class="alert-item alert-warning-dark mb-3">
-                <i class="bi bi-exclamation-triangle" style="color:#fbbf24;font-size:1.2rem;flex-shrink:0;margin-top:2px"></i>
+            <div class="alert-item alert-warning-light mb-3">
+                <i class="bi bi-exclamation-triangle-fill" style="color:#d97706;font-size:1.2rem;flex-shrink:0;margin-top:2px"></i>
                 <div>
-                    <strong style="font-size:0.9rem">{{ expiring_warranty|length }} Warranties Expiring Within 90 Days</strong>
-                    <div style="font-size:0.82rem;color:#94a3b8">
+                    <strong style="font-size:0.9rem; color:#b45309;">{{ expiring_warranty|length }} Warranties Expiring Within 90 Days</strong>
+                    <div style="font-size:0.85rem;color:#78350f">
                         {% for r in expiring_warranty[:3] %}{{ r.uid }}{% if not loop.last %}, {% endif %}{% endfor %}
                         {% if expiring_warranty|length > 3 %} and {{ expiring_warranty|length - 3 }} more...{% endif %}
                     </div>
@@ -185,26 +230,26 @@
             </div>
             {% endif %}
             {% if upcoming_inspections %}
-            <div class="alert-item alert-danger-dark mb-3">
-                <i class="bi bi-calendar-check" style="color:#f87171;font-size:1.2rem;flex-shrink:0;margin-top:2px"></i>
+            <div class="alert-item alert-danger-light mb-3">
+                <i class="bi bi-calendar-x-fill" style="color:#dc2626;font-size:1.2rem;flex-shrink:0;margin-top:2px"></i>
                 <div>
-                    <strong style="font-size:0.9rem">{{ upcoming_inspections|length }} Inspections Due Within 30 Days</strong>
-                    <div style="font-size:0.82rem;color:#94a3b8">Review the inspection schedule and dispatch technicians.</div>
+                    <strong style="font-size:0.9rem; color:#b91c1c;">{{ upcoming_inspections|length }} Inspections Due Within 30 Days</strong>
+                    <div style="font-size:0.85rem;color:#7f1d1d">Review the inspection schedule and dispatch technicians.</div>
                 </div>
             </div>
             {% endif %}
 
             <!-- Search -->
             <div class="mb-3 d-flex gap-2">
-                <input type="text" id="searchInput" class="form-control form-control-dark" placeholder="Search by UID, component type, or vendor…" style="max-width:400px">
-                <button class="btn-outline-blue" onclick="filterTable()"><i class="bi bi-search"></i></button>
+                <input type="text" id="searchInput" class="form-control form-control-light" placeholder="Search by UID, component type, or vendor…" style="max-width:400px">
+                <button class="btn btn-primary" onclick="filterTable()" style="background:var(--ir-blue); border-color:var(--ir-blue);"><i class="bi bi-search"></i> Search</button>
             </div>
 
             <!-- Components table -->
             <div class="panel">
                 <div class="panel-header d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-database-check me-2" style="color:#60a5fa"></i>Component Registry</span>
-                    <span class="badge" style="background:rgba(59,130,246,0.15);color:#60a5fa">{{ rows|length }} records</span>
+                    <span><i class="bi bi-database-check me-2" style="color:var(--ir-blue)"></i>Component Registry</span>
+                    <span class="badge" style="background:var(--ir-light-gray);color:var(--ir-blue);border:1px solid #cbd5e1;">{{ rows|length }} records</span>
                 </div>
                 <div class="panel-body p-0">
                     {% if rows %}
@@ -226,10 +271,10 @@
                             <tbody>
                                 {% for r in rows %}
                                 <tr>
-                                    <td><code style="color:#60a5fa;font-size:0.82rem">{{ r.uid }}</code></td>
-                                    <td style="font-size:0.85rem">{{ r.item_type or '—' }}</td>
+                                    <td><code style="color:var(--ir-blue);font-size:0.85rem;font-weight:600;">{{ r.uid }}</code></td>
+                                    <td style="font-size:0.85rem;font-weight:500;">{{ r.item_type or '—' }}</td>
                                     <td style="font-size:0.85rem">{{ r.vendor or '—' }}</td>
-                                    <td style="font-size:0.82rem;color:#94a3b8">{{ r.supply_date or '—' }}</td>
+                                    <td style="font-size:0.85rem;color:#64748b">{{ r.supply_date or '—' }}</td>
                                     <td>
                                         {% if r.warranty_status == 'ACTIVE' %}
                                             <span class="warranty-badge w-active"><i class="bi bi-shield-check"></i> {{ r.warranty_end }}</span>
@@ -243,12 +288,12 @@
                                     </td>
                                     <td>
                                         {% if r.next_inspection and r.next_inspection not in ('Not scheduled', 'Invalid date') %}
-                                            <span style="font-size:0.82rem;{% if is_date_soon(r.next_inspection) %}color:#fbbf24;font-weight:600{% else %}color:#94a3b8{% endif %}">
+                                            <span style="font-size:0.85rem;{% if is_date_soon(r.next_inspection) %}color:#d97706;font-weight:700{% else %}color:#64748b;font-weight:500{% endif %}">
                                                 {{ r.next_inspection }}
-                                                {% if is_date_soon(r.next_inspection) %}<i class="bi bi-calendar-check"></i>{% endif %}
+                                                {% if is_date_soon(r.next_inspection) %}<i class="bi bi-calendar-check ms-1"></i>{% endif %}
                                             </span>
                                         {% else %}
-                                            <span style="color:#475569;font-size:0.82rem">Not scheduled</span>
+                                            <span style="color:#94a3b8;font-size:0.85rem">Not scheduled</span>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -265,8 +310,8 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="/view/{{ r.uid }}" class="btn-outline-blue">
-                                            <i class="bi bi-eye"></i>
+                                        <a href="/view/{{ r.uid }}" class="btn-outline-blue border-0 py-1 px-2">
+                                            <i class="bi bi-eye-fill"></i> View
                                         </a>
                                     </td>
                                 </tr>
@@ -278,7 +323,7 @@
                     <div class="empty-state">
                         <i class="bi bi-inbox"></i>
                         <h5>No components synced yet</h5>
-                        <p style="font-size:0.85rem">Components will appear here once GaugeMarket pushes data to this portal.</p>
+                        <p style="font-size:0.9rem">Components will appear here once GaugeMarket pushes data to this portal.</p>
                     </div>
                     {% endif %}
                 </div>
@@ -290,29 +335,29 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-5">
                     <div class="chart-box">
-                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Warranty Status Distribution</h6>
+                        <h6 class="fw-bold mb-3" style="color:var(--ir-blue-dark)">Warranty Status Distribution</h6>
                         <canvas id="warrantyChart" height="220"></canvas>
                     </div>
                 </div>
                 <div class="col-md-7">
                     <div class="panel h-100">
-                        <div class="panel-header"><i class="bi bi-exclamation-circle me-2 text-warning"></i>Expiring Soon</div>
+                        <div class="panel-header"><i class="bi bi-exclamation-circle-fill me-2 text-warning"></i>Expiring Soon</div>
                         <div class="panel-body">
                             {% if expiring_warranty %}
                             {% for r in expiring_warranty %}
-                            <div class="alert-item alert-warning-dark mb-2">
-                                <i class="bi bi-clock-history" style="color:#fbbf24"></i>
+                            <div class="alert-item alert-warning-light mb-2">
+                                <i class="bi bi-clock-history" style="color:#d97706; font-size:1.1rem"></i>
                                 <div>
-                                    <strong style="font-size:0.85rem"><code style="color:#60a5fa">{{ r.uid }}</code> — {{ r.item_type or 'Component' }}</strong>
-                                    <div style="font-size:0.8rem;color:#94a3b8">Vendor: {{ r.vendor or '—' }} | Expires: {{ r.warranty_end }}</div>
+                                    <strong style="font-size:0.9rem; color:#b45309"><code style="color:var(--ir-blue); font-weight:700">{{ r.uid }}</code> — {{ r.item_type or 'Component' }}</strong>
+                                    <div style="font-size:0.85rem;color:#78350f">Vendor: {{ r.vendor or '—' }} | Expires: <strong>{{ r.warranty_end }}</strong></div>
                                 </div>
                                 <a href="/view/{{ r.uid }}" class="ms-auto btn-outline-blue" style="white-space:nowrap">View</a>
                             </div>
                             {% endfor %}
                             {% else %}
                             <div class="empty-state" style="padding:24px">
-                                <i class="bi bi-shield-check" style="color:#4ade80;font-size:2rem;display:block;margin-bottom:8px"></i>
-                                <p style="margin:0;font-size:0.85rem">No warranties expiring within 90 days.</p>
+                                <i class="bi bi-shield-check" style="color:#16a34a;font-size:2.5rem;display:block;margin-bottom:8px"></i>
+                                <p style="margin:0;font-size:0.9rem">No warranties expiring within 90 days.</p>
                             </div>
                             {% endif %}
                         </div>
@@ -322,8 +367,8 @@
 
             <!-- Expired warranties -->
             {% if warranty_counts.EXPIRED > 0 %}
-            <div class="panel">
-                <div class="panel-header"><i class="bi bi-shield-x me-2 text-danger"></i>Expired Warranties ({{ warranty_counts.EXPIRED }})</div>
+            <div class="panel border-danger">
+                <div class="panel-header bg-danger text-white"><i class="bi bi-shield-x me-2"></i>Expired Warranties ({{ warranty_counts.EXPIRED }})</div>
                 <div class="panel-body p-0">
                     <div class="table-responsive">
                         <table class="table mb-0">
@@ -332,11 +377,11 @@
                                 {% for r in rows %}
                                 {% if r.warranty_status == 'EXPIRED' %}
                                 <tr>
-                                    <td><code style="color:#60a5fa;font-size:0.82rem">{{ r.uid }}</code></td>
-                                    <td style="font-size:0.85rem">{{ r.item_type or '—' }}</td>
-                                    <td style="font-size:0.85rem">{{ r.vendor or '—' }}</td>
-                                    <td style="font-size:0.82rem;color:#f87171">{{ r.warranty_end }}</td>
-                                    <td><a href="/view/{{ r.uid }}" class="btn-outline-blue">View</a></td>
+                                    <td><code style="color:var(--ir-blue);font-weight:600">{{ r.uid }}</code></td>
+                                    <td style="font-weight:500">{{ r.item_type or '—' }}</td>
+                                    <td>{{ r.vendor or '—' }}</td>
+                                    <td style="font-weight:600;color:#dc2626">{{ r.warranty_end }}</td>
+                                    <td><a href="/view/{{ r.uid }}" class="btn-outline-blue border-0 py-1 px-2">View</a></td>
                                 </tr>
                                 {% endif %}
                                 {% endfor %}
@@ -353,24 +398,24 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-5">
                     <div class="chart-box">
-                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Lifecycle State Distribution</h6>
+                        <h6 class="fw-bold mb-3" style="color:var(--ir-blue-dark)">Lifecycle State Distribution</h6>
                         <canvas id="lifecycleChart" height="260"></canvas>
                     </div>
                 </div>
                 <div class="col-md-7">
                     <div class="panel">
-                        <div class="panel-header"><i class="bi bi-arrow-repeat me-2" style="color:#60a5fa"></i>State Breakdown</div>
+                        <div class="panel-header"><i class="bi bi-arrow-repeat me-2" style="color:var(--ir-blue)"></i>State Breakdown</div>
                         <div class="panel-body">
                             {% for state, count in lifecycle_counts.items() %}
                             <div class="d-flex align-items-center justify-content-between mb-2 p-2"
-                                 style="background:rgba(255,255,255,0.04);border-radius:10px">
+                                 style="background:#f8f9fa;border:1px solid #e2e8f0;border-radius:8px">
                                 <span class="lifecycle-badge lc-{{ state|lower }}">{{ state }}</span>
                                 <div style="flex:1;margin:0 16px">
-                                    <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px">
-                                        <div style="height:4px;background:#3b82f6;border-radius:4px;width:{{ ((count / (rows|length)) * 100)|round|int if rows else 0 }}%"></div>
+                                    <div style="height:6px;background:#e2e8f0;border-radius:4px">
+                                        <div style="height:6px;background:var(--ir-blue);border-radius:4px;width:{{ ((count / (rows|length)) * 100)|round|int if rows else 0 }}%"></div>
                                     </div>
                                 </div>
-                                <span style="font-weight:700;color:#e2e8f0;font-size:0.9rem">{{ count }}</span>
+                                <span style="font-weight:800;color:var(--ir-blue-dark);font-size:0.95rem">{{ count }}</span>
                             </div>
                             {% endfor %}
                         </div>
@@ -380,7 +425,7 @@
 
             <!-- Components by lifecycle state -->
             <div class="panel">
-                <div class="panel-header"><i class="bi bi-table me-2" style="color:#60a5fa"></i>Components by Lifecycle Status</div>
+                <div class="panel-header"><i class="bi bi-table me-2" style="color:var(--ir-blue)"></i>Components by Lifecycle Status</div>
                 <div class="panel-body p-0">
                     <div class="table-responsive">
                         <table class="table mb-0">
@@ -388,15 +433,15 @@
                             <tbody>
                                 {% for r in rows %}
                                 <tr>
-                                    <td><code style="color:#60a5fa;font-size:0.82rem">{{ r.uid }}</code></td>
-                                    <td style="font-size:0.85rem">{{ r.item_type or '—' }}</td>
-                                    <td style="font-size:0.85rem">{{ r.vendor or '—' }}</td>
+                                    <td><code style="color:var(--ir-blue);font-weight:600">{{ r.uid }}</code></td>
+                                    <td style="font-weight:500">{{ r.item_type or '—' }}</td>
+                                    <td>{{ r.vendor or '—' }}</td>
                                     <td>
                                         {% set lc = r.lifecycle_status or 'REGISTERED' %}
                                         <span class="lifecycle-badge lc-{{ lc|lower }}">{{ lc }}</span>
                                     </td>
-                                    <td style="font-size:0.78rem;color:#475569">{{ r.synced_at[:10] if r.synced_at else '—' }}</td>
-                                    <td><a href="/view/{{ r.uid }}" class="btn-outline-blue">View</a></td>
+                                    <td style="color:#64748b">{{ r.synced_at[:10] if r.synced_at else '—' }}</td>
+                                    <td><a href="/view/{{ r.uid }}" class="btn-outline-blue border-0 py-1 px-2">View</a></td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -411,7 +456,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <div class="chart-box">
-                        <h6 class="fw-semibold mb-3" style="color:#94a3b8">Component Count by Vendor</h6>
+                        <h6 class="fw-bold mb-3" style="color:var(--ir-blue-dark)">Component Count by Vendor</h6>
                         <canvas id="vendorChart" height="240"></canvas>
                     </div>
                 </div>
@@ -422,11 +467,11 @@
                             {% if vendor_risk_map %}
                             {% for v in vendor_risk_map %}
                             <div class="d-flex align-items-center gap-2 mb-2 p-2"
-                                 style="background:rgba(255,255,255,0.04);border-radius:10px">
-                                <i class="bi bi-building" style="color:{% if v.high > 0 %}#f87171{% else %}#4ade80{% endif %}"></i>
+                                 style="background:#f8f9fa;border:1px solid #e2e8f0;border-radius:8px">
+                                <i class="bi bi-building-fill" style="color:{% if v.high > 0 %}#dc2626{% else %}#16a34a{% endif %}; font-size:1.2rem"></i>
                                 <div style="flex:1">
-                                    <div style="font-size:0.85rem;font-weight:600">{{ v.vendor }}</div>
-                                    <div style="font-size:0.78rem;color:#64748b">{{ v.count }} components, {{ v.high }} high-risk</div>
+                                    <div style="font-size:0.9rem;font-weight:700;color:var(--ir-blue-dark)">{{ v.vendor }}</div>
+                                    <div style="font-size:0.85rem;color:#475569"><strong>{{ v.count }}</strong> components, <strong>{{ v.high }}</strong> high-risk</div>
                                 </div>
                                 {% if v.high > 0 %}
                                 <span class="risk-badge risk-high">High Risk Vendor</span>
@@ -437,8 +482,8 @@
                             {% endfor %}
                             {% else %}
                             <div class="empty-state" style="padding:24px">
-                                <i class="bi bi-building" style="font-size:2rem;display:block;margin-bottom:8px;color:#475569"></i>
-                                <p style="margin:0;font-size:0.85rem">No vendor data available yet.</p>
+                                <i class="bi bi-building" style="font-size:2.5rem;display:block;margin-bottom:8px;color:#cbd5e1"></i>
+                                <p style="margin:0;font-size:0.9rem">No vendor data available yet.</p>
                             </div>
                             {% endif %}
                         </div>
@@ -450,24 +495,24 @@
         <!-- ── Tab: Activity Feed ─────────────────────────────────────────── -->
         <div class="tab-pane fade" id="tab-activity">
             <div class="panel">
-                <div class="panel-header"><i class="bi bi-clock-history me-2" style="color:#60a5fa"></i>Recent Lifecycle Events</div>
+                <div class="panel-header"><i class="bi bi-clock-history me-2" style="color:var(--ir-blue)"></i>Recent Lifecycle Events</div>
                 <div class="panel-body">
                     {% if recent_events %}
                     <div class="event-timeline">
                         {% for ev in recent_events %}
                         <div class="event-entry">
                             <div class="ev-type">
-                                <code style="color:#60a5fa;font-size:0.78rem">{{ ev.uid }}</code>
+                                <code style="color:var(--ir-blue);font-weight:700;font-size:0.85rem">{{ ev.uid }}</code>
                                 &nbsp;·&nbsp; {{ ev.event_type.replace('_',' ') }}
                             </div>
                             {% if ev.description %}
-                            <div class="ev-desc">{{ ev.description }}</div>
+                            <div class="ev-desc mt-1">{{ ev.description }}</div>
                             {% endif %}
-                            <div class="ev-time">
+                            <div class="ev-time mt-1">
                                 {{ ev.event_time }} &nbsp;·&nbsp;
-                                <span style="color:#60a5fa">{{ ev.source }}</span>
+                                <span style="font-weight:600;color:var(--ir-saffron)">{{ ev.source }}</span>
                                 {% if ev.actor and ev.actor != 'SYSTEM' %}
-                                &nbsp;·&nbsp; {{ ev.actor }}
+                                &nbsp;·&nbsp; <i class="bi bi-person-fill text-secondary"></i> {{ ev.actor }}
                                 {% endif %}
                             </div>
                         </div>
@@ -477,7 +522,7 @@
                     <div class="empty-state">
                         <i class="bi bi-clock-history"></i>
                         <h5>No activity yet</h5>
-                        <p style="font-size:0.85rem">Events will appear here as components are synced and updated.</p>
+                        <p style="font-size:0.9rem">Events will appear here as components are synced and updated.</p>
                     </div>
                     {% endif %}
                 </div>
@@ -498,14 +543,14 @@ if (wCtx) {
             labels: ['Active', 'Expiring Soon', 'Expired', 'Unknown'],
             datasets: [{
                 data: [{{ warranty_counts.ACTIVE }}, {{ warranty_counts.EXPIRING_SOON }}, {{ warranty_counts.EXPIRED }}, {{ warranty_counts.UNKNOWN }}],
-                backgroundColor: ['rgba(22,163,74,0.8)', 'rgba(234,179,8,0.8)', 'rgba(220,38,38,0.8)', 'rgba(100,116,139,0.5)'],
-                borderColor: ['#16a34a', '#eab308', '#dc2626', '#475569'],
-                borderWidth: 1,
+                backgroundColor: ['#22c55e', '#f59e0b', '#ef4444', '#cbd5e1'],
+                borderColor: ['#ffffff', '#ffffff', '#ffffff', '#ffffff'],
+                borderWidth: 2,
             }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 12, font: { size: 12 } } } },
+            plugins: { legend: { position: 'bottom', labels: { color: '#334155', padding: 12, font: { size: 12, weight: '500' } } } },
             cutout: '62%'
         }
     });
@@ -518,19 +563,19 @@ if (lcCtx) {
     const lcData = [{% for s, c in lifecycle_counts.items() %}{{ c }},{% endfor %}];
     const lcColors = lcLabels.map(l => {
         const map = {
-            'REGISTERED': 'rgba(148,163,184,0.7)',
-            'LISTED': 'rgba(59,130,246,0.7)',
-            'PURCHASED': 'rgba(139,92,246,0.7)',
-            'PACKED': 'rgba(139,92,246,0.6)',
-            'SHIPPED': 'rgba(249,115,22,0.7)',
-            'IN_TRANSIT': 'rgba(249,115,22,0.8)',
-            'DELIVERED': 'rgba(22,163,74,0.8)',
-            'ASSIGNED': 'rgba(22,163,74,0.7)',
-            'INSTALLED': 'rgba(22,163,74,0.6)',
-            'MAINTENANCE': 'rgba(234,179,8,0.7)',
-            'RETIRED': 'rgba(220,38,38,0.7)',
+            'REGISTERED': '#94a3b8',
+            'LISTED': '#3b82f6',
+            'PURCHASED': '#8b5cf6',
+            'PACKED': '#a78bfa',
+            'SHIPPED': '#f97316',
+            'IN_TRANSIT': '#ea580c',
+            'DELIVERED': '#16a34a',
+            'ASSIGNED': '#22c55e',
+            'INSTALLED': '#4ade80',
+            'MAINTENANCE': '#eab308',
+            'RETIRED': '#ef4444',
         };
-        return map[l] || 'rgba(100,116,139,0.5)';
+        return map[l] || '#cbd5e1';
     });
     new Chart(lcCtx, {
         type: 'bar',
@@ -540,7 +585,7 @@ if (lcCtx) {
                 label: 'Components',
                 data: lcData,
                 backgroundColor: lcColors,
-                borderRadius: 8,
+                borderRadius: 4,
                 borderSkipped: false,
             }]
         },
@@ -549,8 +594,8 @@ if (lcCtx) {
             indexAxis: 'y',
             plugins: { legend: { display: false } },
             scales: {
-                x: { beginAtZero: true, ticks: { color: '#64748b', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                y: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } }
+                x: { beginAtZero: true, ticks: { color: '#475569', stepSize: 1, font: {weight: '600'} }, grid: { color: '#e2e8f0' } },
+                y: { ticks: { color: '#334155', font: { size: 11, weight: '600' } }, grid: { display: false } }
             }
         }
     });
@@ -567,8 +612,8 @@ if (vCtx) {
             datasets: [{
                 label: 'Components',
                 data: vData.map(v => v.count),
-                backgroundColor: vData.map(v => v.high > 0 ? 'rgba(220,38,38,0.7)' : 'rgba(59,130,246,0.7)'),
-                borderRadius: 8,
+                backgroundColor: vData.map(v => v.high > 0 ? '#ef4444' : '#3b82f6'),
+                borderRadius: 4,
                 borderSkipped: false,
             }]
         },
@@ -577,8 +622,8 @@ if (vCtx) {
             indexAxis: 'y',
             plugins: { legend: { display: false } },
             scales: {
-                x: { beginAtZero: true, ticks: { color: '#64748b', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.05)' } },
-                y: { ticks: { color: '#94a3b8', font: { size: 11 } }, grid: { display: false } }
+                x: { beginAtZero: true, ticks: { color: '#475569', stepSize: 1, font: {weight: '600'} }, grid: { color: '#e2e8f0' } },
+                y: { ticks: { color: '#334155', font: { size: 11, weight: '600' } }, grid: { display: false } }
             }
         }
     });

@@ -3,135 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RailQR Companion Portal — UDM &amp; TMS</title>
+    <title>RailQR Companion Portal — UDM &amp; TMS | Indian Railways</title>
     <meta name="description" content="Unified Data Management and Transport Management System for the Indian Railways RailQR supply chain ecosystem.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root {
-            --rail-blue: #1a3a6b;
-            --rail-accent: #f97316;
-            --rail-green: #16a34a;
-            --rail-red: #dc2626;
+            --ir-blue: #1a3a6b;
+            --ir-blue-dark: #0f2342;
+            --ir-saffron: #f97316;
+            --ir-green: #16a34a;
+            --ir-light-gray: #f8f9fa;
         }
         * { box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: #eef2f6;
+            color: #334155;
             min-height: 100vh;
         }
-        .hero {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding: 60px 0 40px;
-            position: relative;
-            overflow: hidden;
+        .govt-bar {
+            background: #ffffff;
+            border-bottom: 2px solid var(--ir-saffron);
+            padding: 4px 0;
+            font-size: 0.8rem;
+            color: #475569;
+            font-weight: 600;
         }
-        .hero::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: radial-gradient(ellipse at 60% 50%, rgba(249,115,22,0.08) 0%, transparent 70%);
+        .govt-bar .d-flex { gap: 16px; }
+        .hero {
+            background: linear-gradient(rgba(26, 58, 107, 0.85), rgba(15, 35, 66, 0.95)), url('/static/rail.jpg') center/cover no-repeat;
+            padding: 60px 0 50px;
+            position: relative;
+            color: #ffffff;
+            border-bottom: 4px solid var(--ir-saffron);
+        }
+        .azadi-logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            height: 70px;
+            background: #fff;
+            padding: 4px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .hero-badge {
             display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(249,115,22,0.15);
-            border: 1px solid rgba(249,115,22,0.3);
-            color: #fb923c; border-radius: 100px;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: #ffffff; border-radius: 100px;
             padding: 6px 16px; font-size: 0.8rem; font-weight: 600;
             margin-bottom: 20px; letter-spacing: 0.5px;
         }
         .hero h1 { font-size: 2.8rem; font-weight: 800; line-height: 1.15; }
-        .hero h1 span { color: #f97316; }
-        .hero .lead { color: #94a3b8; max-width: 560px; }
+        .hero h1 span { color: var(--ir-saffron); }
+        .hero .lead { color: #cbd5e1; max-width: 600px; }
         .stat-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 16px; padding: 24px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-bottom: 4px solid var(--ir-blue);
+            border-radius: 12px; padding: 24px;
             text-align: center; transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
-        .stat-card:hover { transform: translateY(-4px); border-color: rgba(249,115,22,0.3); }
-        .stat-card .num { font-size: 2.4rem; font-weight: 800; }
-        .stat-card .label { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .stat-card .num { font-size: 2.4rem; font-weight: 800; color: var(--ir-blue); }
+        .stat-card .label { color: #64748b; font-size: 0.85rem; margin-top: 4px; font-weight: 600; text-transform: uppercase; }
         .portal-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px; padding: 36px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px; padding: 36px;
             transition: all 0.3s; text-decoration: none; color: inherit;
-            display: block;
+            display: block; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
-        .portal-card:hover { transform: translateY(-6px); color: inherit; }
-        .portal-card.udm { border-top: 3px solid #3b82f6; }
-        .portal-card.udm:hover { border-color: #3b82f6; box-shadow: 0 20px 60px rgba(59,130,246,0.15); }
-        .portal-card.tms { border-top: 3px solid #f97316; }
-        .portal-card.tms:hover { border-color: #f97316; box-shadow: 0 20px 60px rgba(249,115,22,0.15); }
+        .portal-card:hover { transform: translateY(-6px); color: inherit; box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.1); }
+        .portal-card.udm { border-top: 4px solid var(--ir-blue); }
+        .portal-card.tms { border-top: 4px solid var(--ir-saffron); }
         .portal-icon {
             width: 64px; height: 64px; border-radius: 16px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.8rem; margin-bottom: 20px;
         }
-        .portal-icon.blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
-        .portal-icon.orange { background: rgba(249,115,22,0.15); color: #fb923c; }
-        .portal-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+        .portal-icon.blue { background: rgba(26, 58, 107, 0.1); color: var(--ir-blue); }
+        .portal-icon.orange { background: rgba(249, 115, 22, 0.1); color: var(--ir-saffron); }
+        .portal-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; color: var(--ir-blue-dark); }
         .portal-card p { color: #64748b; font-size: 0.9rem; line-height: 1.6; }
         .feature-list { list-style: none; padding: 0; margin: 16px 0 0; }
         .feature-list li {
             display: flex; align-items: center; gap: 8px;
-            font-size: 0.85rem; color: #94a3b8; margin-bottom: 8px;
+            font-size: 0.85rem; color: #475569; margin-bottom: 8px; font-weight: 500;
         }
-        .feature-list li i { color: #16a34a; }
+        .feature-list li i { color: var(--ir-green); }
         .flow-section {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 20px; padding: 40px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px; padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .flow-step {
             display: flex; align-items: flex-start; gap: 16px; margin-bottom: 20px;
         }
         .flow-num {
             width: 32px; height: 32px; border-radius: 50%;
-            background: rgba(249,115,22,0.15); border: 1px solid rgba(249,115,22,0.3);
-            color: #fb923c; display: flex; align-items: center; justify-content: center;
+            background: rgba(26, 58, 107, 0.1); border: 1px solid var(--ir-blue);
+            color: var(--ir-blue); display: flex; align-items: center; justify-content: center;
             font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
         }
-        .flow-text strong { display: block; font-size: 0.9rem; margin-bottom: 2px; }
+        .flow-text strong { display: block; font-size: 0.9rem; margin-bottom: 2px; color: var(--ir-blue-dark); }
         .flow-text span { font-size: 0.8rem; color: #64748b; }
         .api-badge {
             display: inline-flex; align-items: center; gap: 6px;
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px; padding: 4px 10px; font-family: monospace;
-            font-size: 0.78rem; color: #94a3b8; margin: 3px;
+            background: #f1f5f9; border: 1px solid #e2e8f0;
+            border-radius: 6px; padding: 4px 10px; font-family: monospace;
+            font-size: 0.78rem; color: #475569; margin: 3px;
         }
         .api-badge .method { font-weight: 700; }
-        .api-badge .method.get { color: #60a5fa; }
-        .api-badge .method.post { color: #34d399; }
+        .api-badge .method.get { color: var(--ir-blue); }
+        .api-badge .method.post { color: var(--ir-green); }
         .footer-bar {
-            border-top: 1px solid rgba(255,255,255,0.06);
-            padding: 24px 0; color: #475569; font-size: 0.85rem;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 24px 0; color: #64748b; font-size: 0.85rem;
+            margin-top: 40px;
         }
         .btn-gm {
-            background: linear-gradient(135deg, #f97316, #ea580c);
-            color: white; border: none; border-radius: 12px;
+            background: var(--ir-saffron);
+            color: white; border: none; border-radius: 8px;
             padding: 10px 24px; font-weight: 600; font-size: 0.9rem;
             text-decoration: none; transition: all 0.3s; display: inline-flex;
             align-items: center; gap: 8px;
         }
-        .btn-gm:hover { transform: translateY(-2px); color: white; box-shadow: 0 8px 24px rgba(249,115,22,0.3); }
+        .btn-gm:hover { background: #ea580c; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(249,115,22,0.3); }
         .btn-outline-light-custom {
-            background: transparent; color: #94a3b8;
-            border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+            background: rgba(255,255,255,0.1); color: #ffffff;
+            border: 1px solid rgba(255,255,255,0.3); border-radius: 8px;
             padding: 10px 24px; font-size: 0.9rem; text-decoration: none;
             transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
         }
-        .btn-outline-light-custom:hover { background: rgba(255,255,255,0.06); color: #e2e8f0; }
+        .btn-outline-light-custom:hover { background: rgba(255,255,255,0.2); color: #ffffff; }
     </style>
 </head>
 <body>
 
+<!-- Govt Bar -->
+<div class="govt-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <span><i class="bi bi-bank"></i> भारत सरकार | GOVERNMENT OF INDIA</span>
+        </div>
+        <div class="d-flex align-items-center">
+            <span>रेल मंत्रालय | MINISTRY OF RAILWAYS</span>
+        </div>
+    </div>
+</div>
+
 <!-- Hero -->
 <div class="hero">
-    <div class="container position-relative" style="z-index:1">
+    <div class="container position-relative">
+        <img src="/static/aazadi.jpg" alt="Azadi Ka Amrit Mahotsav" class="azadi-logo d-none d-md-block">
+        
         <div class="hero-badge">
             <i class="bi bi-train-freight-front"></i>
             RailQR Ecosystem — Companion Portal
@@ -142,7 +174,7 @@
         </h1>
         <p class="lead mb-4">
             Unified Data Management and Transport Management System —
-            the digital backbone of the Indian Railways supply chain.
+            the secure digital backbone of the Indian Railways supply chain.
         </p>
         <div class="d-flex flex-wrap gap-3 align-items-center">
             <a href="{{ gaugemarket_url }}" target="_blank" class="btn-gm">
@@ -175,19 +207,19 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="num" style="color:#f97316">{{ total_shipments }}</div>
+                <div class="num" style="color:var(--ir-saffron)">{{ total_shipments }}</div>
                 <div class="label">Shipments Managed</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="num text-danger">{{ high_risk }}</div>
+                <div class="num" style="color:#dc2626">{{ high_risk }}</div>
                 <div class="label">High-Risk Components</div>
             </div>
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="num text-warning">{{ in_transit }}</div>
+                <div class="num" style="color:#d97706">{{ in_transit }}</div>
                 <div class="label">Shipments In Transit</div>
             </div>
         </div>
@@ -208,7 +240,7 @@
                     <li><i class="bi bi-check-circle-fill"></i> Real-time sync from GaugeMarket</li>
                 </ul>
                 <div class="mt-3">
-                    <span class="btn btn-sm btn-outline-primary">Open UDM <i class="bi bi-arrow-right"></i></span>
+                    <span class="btn btn-sm btn-outline-primary fw-bold" style="border-radius: 8px;">Open UDM <i class="bi bi-arrow-right"></i></span>
                 </div>
             </a>
         </div>
@@ -225,7 +257,7 @@
                     <li><i class="bi bi-check-circle-fill"></i> Public tracking number lookup</li>
                 </ul>
                 <div class="mt-3">
-                    <span class="btn btn-sm btn-outline-warning">Open TMS <i class="bi bi-arrow-right"></i></span>
+                    <span class="btn btn-sm btn-outline-warning fw-bold" style="border-radius: 8px; color: var(--ir-saffron); border-color: var(--ir-saffron);">Open TMS <i class="bi bi-arrow-right"></i></span>
                 </div>
             </a>
         </div>
@@ -235,7 +267,7 @@
     <div class="row g-4 mb-5">
         <div class="col-md-7">
             <div class="flow-section">
-                <h5 class="fw-bold mb-4" style="color:#f97316">
+                <h5 class="fw-bold mb-4" style="color:var(--ir-blue)">
                     <i class="bi bi-diagram-3"></i> End-to-End Supply Chain Flow
                 </h5>
                 <div class="flow-step">
@@ -284,10 +316,10 @@
         </div>
         <div class="col-md-5">
             <div class="flow-section h-100">
-                <h5 class="fw-bold mb-4" style="color:#60a5fa">
+                <h5 class="fw-bold mb-4" style="color:var(--ir-blue)">
                     <i class="bi bi-plug"></i> Available APIs
                 </h5>
-                <p style="color:#64748b; font-size:0.82rem" class="mb-3">Integration endpoints</p>
+                <p style="color:#64748b; font-size:0.85rem" class="mb-3">Integration endpoints</p>
                 <div class="mb-2">
                     <div class="api-badge"><span class="method post">POST</span> /receive_data</div>
                     <div class="api-badge"><span class="method get">GET</span> /api/health</div>
@@ -301,9 +333,9 @@
                     <div class="api-badge"><span class="method post">POST</span> /api/tms/inspections</div>
                     <div class="api-badge"><span class="method get">GET</span> /api/tms/dashboard/stats</div>
                 </div>
-                <div class="mt-3">
-                    <a href="/all" class="btn btn-sm btn-outline-secondary me-2">
-                        <i class="bi bi-table"></i> All Records
+                <div class="mt-4">
+                    <a href="/all" class="btn btn-sm btn-outline-secondary fw-bold" style="border-radius: 8px;">
+                        <i class="bi bi-table"></i> View All Records
                     </a>
                 </div>
             </div>
@@ -313,10 +345,10 @@
 
 <div class="footer-bar">
     <div class="container d-flex justify-content-between flex-wrap gap-2 align-items-center">
-        <span>© 2025 Indian Railways — RailQR Ecosystem | UDM &amp; TMS Companion Portal</span>
+        <span>© 2025 Government of India | Indian Railways — RailQR Ecosystem | UDM &amp; TMS Companion Portal</span>
         <span>
-            <a href="{{ gaugemarket_url }}" target="_blank" style="color:#f97316; text-decoration:none">
-                <i class="bi bi-box-arrow-up-right"></i> GaugeMarket
+            <a href="{{ gaugemarket_url }}" target="_blank" style="color:var(--ir-blue); font-weight:600; text-decoration:none">
+                <i class="bi bi-box-arrow-up-right"></i> GaugeMarket Portal
             </a>
         </span>
     </div>

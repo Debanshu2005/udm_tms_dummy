@@ -3,53 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Components — RailQR UDM Portal</title>
+    <title>All Components — UDM Portal | Indian Railways</title>
     <meta name="description" content="Full list of railway components tracked in the UDM companion portal.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; padding-bottom: 60px; }
-        .top-bar { background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 14px 0; }
-        .back-link { color: #60a5fa; text-decoration: none; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 6px; }
-        .back-link:hover { color: #93c5fd; }
-        .page-title { padding: 28px 0; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 24px; }
-        .panel { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; overflow: hidden; }
-        .panel-header { background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.07); padding: 14px 20px; font-weight: 600; font-size: 0.9rem; }
-        table { color: #e2e8f0; }
-        .table > :not(caption) > * > * { background: transparent; color: #e2e8f0; border-color: rgba(255,255,255,0.07); }
-        .table thead th { background: rgba(59,130,246,0.15) !important; color: #60a5fa; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; }
+        :root {
+            --ir-blue: #1a3a6b;
+            --ir-blue-dark: #0f2342;
+            --ir-saffron: #f97316;
+            --ir-green: #16a34a;
+            --ir-light-gray: #f8f9fa;
+        }
+        body { font-family: 'Inter', sans-serif; background: #eef2f6; color: #334155; padding-bottom: 60px; }
+        
+        .govt-bar {
+            background: #ffffff; border-bottom: 2px solid var(--ir-saffron);
+            padding: 4px 0; font-size: 0.8rem; color: #475569; font-weight: 600;
+        }
+        .govt-bar .d-flex { gap: 16px; }
+
+        .top-bar { background: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 14px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .back-link { color: var(--ir-blue); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+        .back-link:hover { color: var(--ir-saffron); text-decoration: underline; }
+        
+        .page-title { padding: 28px 0; border-bottom: 1px solid #cbd5e1; margin-bottom: 24px; }
+        
+        .panel { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .panel-header { background: var(--ir-light-gray); border-bottom: 1px solid #e2e8f0; padding: 14px 20px; font-weight: 700; font-size: 0.95rem; color: var(--ir-blue-dark); }
+        
+        .table { color: #334155; }
+        .table thead th { background: #f1f5f9 !important; color: var(--ir-blue); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #e2e8f0; }
         .table tbody tr { cursor: pointer; transition: background 0.15s; }
-        .table tbody tr:hover > td { background: rgba(255,255,255,0.05); }
-        .risk-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; }
-        .risk-high { background: rgba(220,38,38,0.15); color: #f87171; border: 1px solid rgba(220,38,38,0.3); }
-        .risk-medium { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.25); }
-        .risk-low { background: rgba(22,163,74,0.15); color: #4ade80; border: 1px solid rgba(22,163,74,0.25); }
-        .lc-badge { padding: 3px 10px; border-radius: 100px; font-size: 0.72rem; font-weight: 700; }
-        .lc-registered { background: rgba(148,163,184,0.12); color: #94a3b8; }
-        .lc-listed { background: rgba(59,130,246,0.12); color: #60a5fa; }
-        .lc-shipped,.lc-in_transit { background: rgba(249,115,22,0.12); color: #fb923c; }
-        .lc-delivered,.lc-installed { background: rgba(22,163,74,0.12); color: #4ade80; }
-        .lc-purchased,.lc-packed { background: rgba(139,92,246,0.12); color: #a78bfa; }
-        .lc-retired { background: rgba(220,38,38,0.12); color: #f87171; }
-        .form-control-dark { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 10px; font-size: 0.85rem; }
-        .form-control-dark:focus { background: rgba(255,255,255,0.09); border-color: #3b82f6; color: #e2e8f0; box-shadow: none; }
-        .form-control-dark::placeholder { color: #475569; }
-        .btn-blue { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; text-decoration: none; transition: all 0.2s; }
-        .btn-blue:hover { background: rgba(59,130,246,0.25); color: #60a5fa; }
-        .empty-state { text-align: center; padding: 60px 24px; color: #475569; }
-        .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; }
-        #rowCount { color: #64748b; font-size: 0.82rem; }
+        .table tbody tr:hover > td { background: #f8f9fa; }
+        
+        .risk-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; border: 1px solid transparent; }
+        .risk-high { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+        .risk-medium { background: #fef3c7; color: #d97706; border-color: #fcd34d; }
+        .risk-low { background: #dcfce7; color: #16a34a; border-color: #86efac; }
+        
+        .lc-badge { padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; border: 1px solid transparent; }
+        .lc-registered { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
+        .lc-listed { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        .lc-shipped,.lc-in_transit { background: #ffedd5; color: #ea580c; border-color: #fdba74; }
+        .lc-delivered,.lc-installed { background: #dcfce7; color: #16a34a; border-color: #86efac; }
+        .lc-purchased,.lc-packed { background: #f3e8ff; color: #9333ea; border-color: #d8b4fe; }
+        .lc-retired { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+        
+        .form-control-light { background: #ffffff; border: 1px solid #cbd5e1; color: #334155; border-radius: 8px; font-size: 0.9rem; font-weight: 500; }
+        .form-control-light:focus { border-color: var(--ir-blue); box-shadow: 0 0 0 3px rgba(26, 58, 107, 0.15); }
+        .form-control-light::placeholder { color: #94a3b8; font-weight: 400; }
+        
+        .btn-blue { background: #ffffff; color: var(--ir-blue); border: 1px solid var(--ir-blue); border-radius: 6px; padding: 4px 12px; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+        .btn-blue:hover { background: var(--ir-blue); color: #ffffff; }
+        
+        .empty-state { text-align: center; padding: 60px 24px; color: #64748b; }
+        .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; color: #cbd5e1; }
+        #rowCount { color: var(--ir-blue); font-size: 0.85rem; font-weight: 600; }
     </style>
 </head>
 <body>
 
+<div class="govt-bar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <span><i class="bi bi-bank"></i> भारत सरकार | GOVERNMENT OF INDIA</span>
+        </div>
+        <div class="d-flex align-items-center">
+            <span>रेल मंत्रालय | MINISTRY OF RAILWAYS</span>
+        </div>
+    </div>
+</div>
+
 <div class="top-bar">
     <div class="container d-flex align-items-center gap-3">
-        <a href="/" class="back-link"><i class="bi bi-arrow-left"></i> Portal Home</a>
-        <span style="color:#334155">|</span>
+        <a href="/" class="back-link"><i class="bi bi-house-door-fill"></i> Portal Home</a>
+        <span style="color:#cbd5e1">|</span>
         <a href="/udm" class="back-link"><i class="bi bi-database-check"></i> UDM</a>
-        <span style="color:#334155">|</span>
+        <span style="color:#cbd5e1">|</span>
         <a href="/tms" class="back-link"><i class="bi bi-truck"></i> TMS</a>
     </div>
 </div>
@@ -57,18 +89,18 @@
 <div class="container">
     <div class="page-title d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-            <h1 style="font-size:1.6rem;font-weight:800;margin:0">All Components</h1>
-            <div style="color:#64748b;font-size:0.85rem;margin-top:4px">{{ rows|length }} records in UDM registry</div>
+            <h1 style="font-size:1.8rem;font-weight:800;margin:0;color:var(--ir-blue-dark)">All Components</h1>
+            <div style="color:#64748b;font-size:0.9rem;margin-top:4px;font-weight:500;">{{ rows|length }} records in UDM registry</div>
         </div>
-        <div class="d-flex gap-2 align-items-center flex-wrap">
-            <input type="text" id="searchInput" class="form-control form-control-dark" placeholder="Search UID, type, vendor…" style="width:260px">
+        <div class="d-flex gap-3 align-items-center flex-wrap">
             <span id="rowCount"></span>
+            <input type="text" id="searchInput" class="form-control form-control-light" placeholder="Search UID, type, vendor…" style="width:280px">
         </div>
     </div>
 
     <div class="panel">
         <div class="panel-header d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-table me-2" style="color:#60a5fa"></i>Component Registry</span>
+            <span><i class="bi bi-table me-2" style="color:var(--ir-blue)"></i>Component Registry</span>
         </div>
         {% if rows %}
         <div class="table-responsive">
@@ -89,11 +121,11 @@
                 <tbody>
                     {% for row in rows %}
                     <tr onclick="window.location='/view/{{ row.uid }}'">
-                        <td><code style="color:#60a5fa;font-size:0.8rem">{{ row.uid }}</code></td>
-                        <td style="font-size:0.85rem">{{ row.item_type or '—' }}</td>
+                        <td><code style="color:var(--ir-blue);font-size:0.85rem;font-weight:700">{{ row.uid }}</code></td>
+                        <td style="font-size:0.85rem;font-weight:500">{{ row.item_type or '—' }}</td>
                         <td style="font-size:0.85rem">{{ row.vendor or '—' }}</td>
-                        <td style="font-size:0.8rem;color:#94a3b8">{{ row.supply_date or '—' }}</td>
-                        <td style="font-size:0.8rem;color:{% if row.warranty_status == 'EXPIRED' %}#f87171{% elif row.warranty_status == 'EXPIRING_SOON' %}#fbbf24{% else %}#4ade80{% endif %}">
+                        <td style="font-size:0.85rem;color:#475569">{{ row.supply_date or '—' }}</td>
+                        <td style="font-size:0.85rem;font-weight:600;color:{% if row.warranty_status == 'EXPIRED' %}#dc2626{% elif row.warranty_status == 'EXPIRING_SOON' %}#d97706{% else %}#16a34a{% endif %}">
                             {{ row.warranty_end or '—' }}
                         </td>
                         <td>
@@ -101,14 +133,14 @@
                             {% elif row.risk == 'Medium' %}<span class="risk-badge risk-medium">Medium</span>
                             {% else %}<span class="risk-badge risk-low">Low</span>{% endif %}
                         </td>
-                        <td style="font-size:0.8rem;color:#94a3b8">{{ row.next_inspection or 'Not scheduled' }}</td>
+                        <td style="font-size:0.85rem;color:#475569">{{ row.next_inspection or 'Not scheduled' }}</td>
                         <td>
                             {% set lc = row.lifecycle_status or 'REGISTERED' %}
                             <span class="lc-badge lc-{{ lc|lower }}">{{ lc }}</span>
                         </td>
                         <td>
                             <a href="/view/{{ row.uid }}" class="btn-blue" onclick="event.stopPropagation()">
-                                <i class="bi bi-eye"></i>
+                                <i class="bi bi-eye-fill"></i> View
                             </a>
                         </td>
                     </tr>
@@ -119,8 +151,8 @@
         {% else %}
         <div class="empty-state">
             <i class="bi bi-inbox"></i>
-            <h5>No components synced yet</h5>
-            <p style="font-size:0.85rem">Components will appear here once GaugeMarket starts pushing data.</p>
+            <h5 class="fw-bold" style="color:var(--ir-blue-dark)">No components synced yet</h5>
+            <p style="font-size:0.9rem">Components will appear here once GaugeMarket starts pushing data.</p>
         </div>
         {% endif %}
     </div>
