@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UDM - User Depot Module | Indian Railways</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .azadi-logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 240px;
+            height: auto;
+            z-index: 1000;
+        }
+        @media (max-width: 768px) {
+            .azadi-logo {
+                width: 120px;
+                top: 5px;
+                right: 5px;
+            }
+        }
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Roboto', sans-serif;
+            padding-bottom: 50px;
+        }
+        .header-section {
+            background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .rail-logo {
+            max-height: 70px;
+            margin-bottom: 15px;
+        }
+        .card {
+            border-radius: 12px;
+            border: 2px solid #0d6efd33;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .table-responsive {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table th {
+            background-color: #0d6efd;
+            color: white;
+            font-weight: 600;
+            border: none;
+        }
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
+        .stats-card {
+            transition: transform 0.3s;
+            text-align: center;
+            padding: 15px 0;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .stats-card h3 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #0d6efd;
+        }
+        .footer {
+            background-color: #0d6efd;
+            color: white;
+            padding: 20px 0;
+            margin-top: 40px;
+            border-radius: 20px 20px 0 0;
+        }
+        .btn-rail {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-rail:hover {
+            background-color: #0a58ca;
+            transform: translateY(-2px);
+            color: white;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+            border-radius: 20px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 20px;
+        }
+        .ai-insight {
+            background: linear-gradient(135deg, #6f42c1 0%, #20c997 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .vendor-score {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .warranty-alert {
+            border-left: 5px solid #fd7e14;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .date-highlight {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        .expiry-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .mobile-collapse {
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .mobile-collapse {
+                display: none;
+            }
+            .stats-card h3 {
+                font-size: 1.5rem;
+            }
+            .vendor-score {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='aazadi.jpg') }}" alt="Azadi Logo" class="azadi-logo">
+
+    <!-- Header -->
+    <div class="header-section">
+        <div class="container">
+            <div class="text-center">
+                <img src="{{ url_for('static', filename='rail.jpg') }}" class="rail-logo" alt="Indian Railways Logo">
+                <h1 class="display-4 fw-bold">User Depot Module</h1>
+                <p class="lead">AI-Powered Date & Vendor Management Dashboard</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Navigation Tabs -->
+        <ul class="nav nav-pills mb-4 justify-content-center" id="udmTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" data-bs-target="#dashboard" type="button" role="tab">Dashboard</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="warranty-tab" data-bs-toggle="pill" data-bs-target="#warranty" type="button" role="tab">Warranty Analytics</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="vendors-tab" data-bs-toggle="pill" data-bs-target="#vendors" type="button" role="tab">Vendor Management</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="inspections-tab" data-bs-toggle="pill" data-bs-target="#inspections" type="button" role="tab">Inspections</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="udmTabsContent">
+            <!-- Dashboard Tab -->
+            <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h3>{{ rows|length if rows else 0 }}</h3>
+                                <p class="text-muted mb-0">Total Fittings</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h3>
+                                    {{ rows|selectattr('warranty_end')|list|length if rows else 0 }}
+                                </h3>
+                                <p class="text-muted mb-0">With Warranty</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h3>
+                                    {{ rows|selectattr('next_inspection')|list|length if rows else 0 }}
+                                </h3>
+                                <p class="text-muted mb-0">Upcoming Inspections</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-3">
+                        <div class="card stats-card">
+                            <div class="card-body">
+                                <h3>
+                                    {{ rows|selectattr('vendor_risk', 'equalto', 'High')|list|length if rows else 0 }}
+                                </h3>
+                                <p class="text-muted mb-0 text-danger">High Risk Vendors</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0"><i class="bi bi-robot"></i> AI Insights & Predictions</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="ai-insight">
+                            <h5><i class="bi bi-lightbulb"></i> Warranty Optimization Opportunity</h5>
+                            <p>23% of components from Vendor "SteelTech Ltd" have warranty claims submitted in the last 30 days of coverage. Consider negotiating extended warranty terms.</p>
+                        </div>
+                        <div class="d-flex justify-content-between flex-wrap">
+                            <div class="text-center px-2 mb-2">
+                                <div class="vendor-score text-primary">92%</div>
+                                <small>Warranty Utilization</small>
+                            </div>
+                            <div class="text-center px-2 mb-2">
+                                <div class="vendor-score text-warning">78%</div>
+                                <small>Inspection Compliance</small>
+                            </div>
+                            <div class="text-center px-2 mb-2">
+                                <div class="vendor-score text-success">86%</div>
+                                <small>Preventive Maintenance</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Information Table -->
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0"><i class="bi bi-calendar-event"></i> Fitting & Vendor Information</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if rows %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>UID</th>
+                                        <th class="mobile-collapse">Fitting Name</th>
+                                        <th>Vendor</th>
+                                        <th class="mobile-collapse">Supply Date</th>
+                                        <th>Warranty End</th>
+                                        <th class="mobile-collapse">Next Inspection</th>
+                                        <th>Vendor Risk</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in rows %}
+                                    <tr>
+                                        <td><strong>{{ r.uid }}</strong></td>
+                                        <td class="mobile-collapse">{{ r.item_type }}</td>
+                                        <td>{{ r.vendor }}</td>
+                                        <td class="mobile-collapse"><span class="date-highlight">{{ r.supply_date }}</span></td>
+                                        <td>
+                                            {% if r.warranty_end and r.warranty_end != 'None' %}
+                                                <span class="{% if r.warranty_end and is_date_soon(r.warranty_end) %}text-danger fw-bold{% endif %}">
+                                                    {{ r.warranty_end }}
+                                                    {% if r.warranty_end and is_date_soon(r.warranty_end) %}<i class="bi bi-exclamation-circle"></i>{% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="mobile-collapse">
+                                            {% if r.next_inspection and r.next_inspection != 'Not scheduled' %}
+                                                <span class="{% if r.next_inspection and is_date_soon(r.next_inspection) %}text-warning fw-bold{% endif %}">
+                                                    {{ r.next_inspection }}
+                                                    {% if r.next_inspection and is_date_soon(r.next_inspection) %}<i class="bi bi-calendar-check"></i>{% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">Not scheduled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if r.vendor_risk == 'High' %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% elif r.vendor_risk == 'Medium' %}
+                                                <span class="badge bg-warning text-dark">Medium</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Low</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('view_record', uid=r.uid) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> <span class="mobile-collapse">View</span>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="bi bi-inbox" style="font-size: 3rem; color: #6c757d;"></i>
+                            <h4 class="mt-3 text-muted">No data available</h4>
+                            <p class="text-muted">There are no fittings or vendor records to display.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warranty Analytics Tab -->
+            <div class="tab-pane fade" id="warranty" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-shield-check"></i> Warranty Status</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="warrantyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="bi bi-calendar-x"></i> Warranty Expiry Timeline</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="expiryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Expiring Warranties</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="warranty-alert mb-3">
+                            <h6><i class="bi bi-clock-history"></i> 15 Warranties Expiring in Next 30 Days</h6>
+                            <p>Components from vendors TechSteel Ltd and RailParts Inc require attention.</p>
+                            <button class="btn btn-sm btn-warning">Generate Renewal Report</button>
+                        </div>
+                        <div class="warranty-alert">
+                            <h6><i class="bi bi-graph-up"></i> Warranty Claim Trends</h6>
+                            <p>32% increase in claims for elastic rail clips in Q3. Consider quality review with vendors.</p>
+                            <button class="btn btn-sm btn-info">Analyze Claim Patterns</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendor Management Tab -->
+            <div class="tab-pane fade" id="vendors" role="tabpanel">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-building"></i> Vendor Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="vendorChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Vendor Risk Management</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="expiry-warning p-3 mb-3">
+                            <h6><i class="bi bi-building-down"></i> TechSteel Ltd - Performance Alert</h6>
+                            <p>Warranty claims increased by 42% in Q3. Recommended action: Quality audit and review of manufacturing process.</p>
+                            <button class="btn btn-sm btn-outline-danger">Send Vendor Alert</button>
+                        </div>
+                        <div class="expiry-warning p-3">
+                            <h6><i class="bi bi-building-exclamation"></i> RailComponents Inc - Warning</h6>
+                            <p>Medium risk level approaching threshold. 12% of components required early repair.</p>
+                            <button class="btn btn-sm btn-outline-warning">Notify Vendor</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inspections Tab -->
+            <div class="tab-pane fade" id="inspections" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> Inspection Compliance</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="inspectionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-calendar2-week"></i> Upcoming Inspections</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="scheduleChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-tools"></i> Inspection Recommendations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="warranty-alert mb-3">
+                            <h6><i class="bi bi-lightning-charge"></i> Priority Inspection Suggested</h6>
+                            <p>18 components in Coastal Section C-7 are due for inspection based on elevated corrosion risk patterns.</p>
+                            <button class="btn btn-sm btn-success">Schedule Inspections</button>
+                        </div>
+                        <div class="warranty-alert">
+                            <h6><i class="bi bi-clipboard-data"></i> Inspection Pattern Detected</h6>
+                            <p>Components installed in monsoon season show 28% higher failure rates. Recommend increasing inspection frequency for these.</p>
+                            <button class="btn btn-sm btn-info">Adjust Inspection Schedule</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between mt-4 flex-wrap">
+            <a href="/" class="btn btn-rail mb-2">
+                <i class="bi bi-house"></i> Back Home
+            </a>
+            <div>
+                <a href="/all" class="btn btn-outline-primary me-2 mb-2">
+                    <i class="bi bi-list"></i> View All Records
+                </a>
+                <button class="btn btn-outline-success mb-2" id="exportBtn">
+                    <i class="bi bi-download"></i> Export Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Indian Railways Fittings Department</h5>
+                    <p>AI-Powered Depot Management | Ensuring warranty compliance and vendor performance</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>© 2023 User Depot Module</p>
+                    <p>Version 2.0 | With AI Analytics</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tab functionality
+        const triggerTabList = document.querySelectorAll('#udmTabs button')
+        triggerTabList.forEach(triggerEl => {
+            new bootstrap.Tab(triggerEl)
+        })
+
+        // Export button
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            alert('Export feature would download a comprehensive report with all analytics data.');
+        });
+
+        // Sample data for charts (replace with actual data from backend)
+        const warrantyData = {
+            active: {{ rows|selectattr('warranty_end')|list|length if rows else 0 }},
+            expired: 20,
+            expiring: 15,
+            none: 5
+        };
+
+        // Charts
+        const warrantyChart = new Chart(document.getElementById('warrantyChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Active Warranty', 'Expired', 'Expiring Soon', 'No Warranty'],
+                datasets: [{
+                    data: [warrantyData.active, warrantyData.expired, warrantyData.expiring, warrantyData.none],
+                    backgroundColor: ['#198754', '#dc3545', '#ffc107', '#6c757d']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        const expiryChart = new Chart(document.getElementById('expiryChart'), {
+            type: 'bar',
+            data: {
+                labels: ['This Week', 'Next Week', 'In 2 Weeks', 'In 3 Weeks', 'In 4 Weeks'],
+                datasets: [{
+                    label: 'Warranties Expiring',
+                    data: [5, 12, 8, 15, 10],
+                    backgroundColor: '#fd7e14'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const vendorChart = new Chart(document.getElementById('vendorChart'), {
+            type: 'bar',
+            data: {
+                labels: ['TechSteel Ltd', 'RailComponents Inc', 'MetroForge', 'InfraSolutions', 'PrecisionParts'],
+                datasets: [{
+                    label: 'Warranty Claim Rate (%)',
+                    data: [18, 8, 12, 5, 9],
+                    backgroundColor: '#0d6efd'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 20
+                    }
+                }
+            }
+        });
+
+        const inspectionChart = new Chart(document.getElementById('inspectionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['On Schedule', 'Overdue', 'Completed Early', 'Rescheduled'],
+                datasets: [{
+                    data: [72, 15, 8, 5],
+                    backgroundColor: ['#198754', '#dc3545', '#20c997', '#ffc107']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        const scheduleChart = new Chart(document.getElementById('scheduleChart'), {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                datasets: [{
+                    label: 'Scheduled Inspections',
+                    data: [18, 22, 26, 24, 28, 31],
+                    borderColor: '#0d6efd',
+                    tension: 0.3,
+                    fill: true,
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>
