@@ -466,6 +466,7 @@ def view_record(uid):
                            inspections=[dict(i) for i in insp])
 
 @app.route("/all")
+@admin_required
 def view_all():
     rows = fetch_all_rows()
     for r in rows:
@@ -477,6 +478,7 @@ def view_all():
 udm_bp = Blueprint("udm", __name__, url_prefix="/udm", template_folder="../templates")
 
 @udm_bp.route("/")
+@admin_required
 def udm_home():
     rows = fetch_all_rows()
     for r in rows:
@@ -578,6 +580,7 @@ def api_update_fitting_dates(uid):
 tms_bp = Blueprint("tms", __name__, url_prefix="/tms", template_folder="../templates")
 
 @tms_bp.route("/")
+@admin_required
 def tms_home():
     rows = fetch_all_rows()
     risk_stats = {
