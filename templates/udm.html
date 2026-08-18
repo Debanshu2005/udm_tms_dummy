@@ -36,7 +36,7 @@
         .udm-header p { color: #cbd5e1; margin: 0; }
         
         .azadi-logo {
-            position: absolute; top: 15px; right: 20px; height: 60px;
+            height: 45px;
             background: #fff; padding: 4px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
@@ -135,7 +135,6 @@
 <!-- Header -->
 <div class="udm-header">
     <div class="container position-relative">
-        <img src="/static/aazadi.jpg" alt="Azadi Ka Amrit Mahotsav" class="azadi-logo d-none d-md-block">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
                 <a href="/" class="back-link mb-2 d-inline-flex align-items-center gap-1">
@@ -144,7 +143,8 @@
                 <h1 class="mb-1">UDM — <span>Unified Data Management</span></h1>
                 <p>Component digital records · Warranty tracking · Lifecycle management</p>
             </div>
-            <div class="text-end">
+            <div class="d-flex align-items-center gap-3">
+                <img src="/static/aazadi.jpg" alt="Azadi Ka Amrit Mahotsav" class="azadi-logo d-none d-md-block">
                 <a href="{{ gaugemarket_url }}" target="_blank" class="btn-header">
                     <i class="bi bi-box-arrow-up-right"></i> GaugeMarket
                 </a>
