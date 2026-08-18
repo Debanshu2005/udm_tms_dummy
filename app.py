@@ -96,27 +96,86 @@ def admin_login():
         error = "Invalid password."
     return f"""
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
-        <title>Admin Login — RailQR Companion Portal</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Login — Indian Railways</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
         <style>
-            body {{ background: linear-gradient(135deg,#0d6efd,#0a58ca); min-height:100vh;
-                   display:flex; align-items:center; justify-content:center; }}
-            .login-card {{ border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,.2); max-width:380px; width:100%; }}
+            :root {{
+                --ir-blue: #1a3a6b;
+                --ir-blue-dark: #0f2342;
+                --ir-saffron: #f97316;
+                --ir-light-gray: #f8f9fa;
+            }}
+            body {{
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(rgba(15, 35, 66, 0.9), rgba(15, 35, 66, 0.95)), url('/static/rail.jpg') center/cover no-repeat;
+                min-height: 100vh;
+                display: flex; flex-direction: column;
+            }}
+            .govt-bar {{
+                background: #ffffff; border-bottom: 2px solid var(--ir-saffron);
+                padding: 4px 0; font-size: 0.8rem; color: #475569; font-weight: 600;
+                width: 100%; text-align: center;
+            }}
+            .login-wrapper {{
+                flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px;
+            }}
+            .login-card {{
+                background: #ffffff; border: none; border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 420px; width: 100%;
+                overflow: hidden; border-top: 4px solid var(--ir-saffron);
+            }}
+            .card-header-ir {{
+                background: var(--ir-light-gray); padding: 30px 24px 24px; text-align: center;
+                border-bottom: 1px solid #e2e8f0;
+            }}
+            .btn-ir {{
+                background: var(--ir-saffron); color: white; border: none;
+                border-radius: 8px; padding: 12px; font-weight: 700; font-size: 1rem;
+                transition: all 0.3s;
+            }}
+            .btn-ir:hover {{ background: #ea580c; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(249,115,22,0.3); }}
+            .form-control:focus {{
+                border-color: var(--ir-blue); box-shadow: 0 0 0 3px rgba(26,58,107,0.15);
+            }}
+            .back-link {{ color: #cbd5e1; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s; }}
+            .back-link:hover {{ color: #ffffff; text-decoration: underline; }}
         </style>
     </head>
     <body>
-        <div class="card login-card p-4">
-            <h4 class="text-center mb-4 fw-bold text-primary">🚂 RailQR Companion Portal</h4>
-            {'<div class="alert alert-danger py-2">'+error+'</div>' if error else ''}
-            <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label">Admin Password</label>
-                    <input type="password" name="password" class="form-control" autofocus required>
+        <div class="govt-bar">
+            <span><i class="bi bi-bank"></i> भारत सरकार | GOVERNMENT OF INDIA &nbsp;&nbsp;|&nbsp;&nbsp; रेल मंत्रालय | MINISTRY OF RAILWAYS</span>
+        </div>
+        
+        <div class="container mt-3">
+            <a href="/" class="back-link"><i class="bi bi-arrow-left"></i> Back to Portal Home</a>
+        </div>
+        
+        <div class="login-wrapper">
+            <div class="login-card">
+                <div class="card-header-ir">
+                    <img src="/static/aazadi.jpg" alt="Azadi Logo" style="height:55px; margin-bottom:20px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                    <h4 class="fw-bold mb-1" style="color:var(--ir-blue-dark)">Authorized Access</h4>
+                    <p style="color:#64748b; font-size:0.9rem; margin:0">RailQR Companion Portal (UDM/TMS)</p>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Sign In</button>
-            </form>
+                <div class="p-4">
+                    {'<div class="alert alert-danger py-2" style="font-size:0.9rem; font-weight:600;"><i class="bi bi-exclamation-triangle-fill me-2"></i>'+error+'</div>' if error else ''}
+                    <form method="POST">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Administrator Password</label>
+                            <input type="password" name="password" class="form-control form-control-lg" style="font-size:1rem;" placeholder="Enter secure password" autofocus required>
+                        </div>
+                        <button type="submit" class="btn-ir w-100">
+                            <i class="bi bi-shield-lock-fill me-2"></i> Sign In to Dashboard
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </body>
     </html>
