@@ -355,6 +355,12 @@ def init_db():
         )
     """)
 
+    # Dummy admin for testing
+    c.execute("""
+        INSERT OR IGNORE INTO admins (name, email, phone, division, employee_id, password_hash)
+        VALUES ('Chief Admin', 'admin@railways.gov.in', '9999999999', 'Railway Board', 'IR-0001', ?)
+    """, (generate_password_hash('admin1234'),))
+
     # Core component registry — synced from GaugeMarket
     c.execute("""
         CREATE TABLE IF NOT EXISTS received (
