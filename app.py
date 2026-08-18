@@ -7,6 +7,7 @@ import tempfile
 import secrets
 from datetime import datetime, timedelta
 from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 try:
     from flask_cors import CORS
@@ -28,7 +29,7 @@ IS_VERCEL = bool(os.environ.get("VERCEL"))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RUNTIME_DIR = tempfile.gettempdir() if IS_VERCEL else BASE_DIR
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin1234")
+ADMIN_INVITE_KEY = os.environ.get("ADMIN_INVITE_KEY", "RAILQR_ADMIN_SECURE_2026")
 GAUGEMARKET_URL = os.environ.get("GAUGEMARKET_URL", "https://rail-qr-marketplace.vercel.app")
 INTERNAL_SECRET = os.environ.get("GAUGEMARKET_INTERNAL_SECRET", "")
 ALLOWED_ORIGINS_RAW = os.environ.get(
@@ -89,11 +90,24 @@ def require_internal_secret(f):
 def admin_login():
     error = None
     if request.method == "POST":
-        if request.form.get("password") == ADMIN_PASSWORD:
+        email = request.form.get("email")
+        password = request.form.get("password")
+        
+        conn = sqlite3.connect(DB)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("SELECT * FROM admins WHERE email = ?", (email,))
+        admin = c.fetchone()
+        conn.close()
+
+        if admin and check_password_hash(admin["password_hash"], password):
             session["admin_logged_in"] = True
+            session["admin_email"] = admin["email"]
+            session["admin_name"] = admin["name"]
             next_url = request.args.get("next") or url_for("home")
             return redirect(next_url)
-        error = "Invalid password."
+        error = "Invalid email or password."
+
     return f"""
     <!DOCTYPE html>
     <html lang="en">
@@ -166,12 +180,149 @@ def admin_login():
                 <div class="p-4">
                     {'<div class="alert alert-danger py-2" style="font-size:0.9rem; font-weight:600;"><i class="bi bi-exclamation-triangle-fill me-2"></i>'+error+'</div>' if error else ''}
                     <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Email Address</label>
+                            <input type="email" name="email" class="form-control form-control-lg" style="font-size:1rem;" placeholder="official@railways.gov.in" autofocus required>
+                        </div>
                         <div class="mb-4">
-                            <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Administrator Password</label>
-                            <input type="password" name="password" class="form-control form-control-lg" style="font-size:1rem;" placeholder="Enter secure password" autofocus required>
+                            <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Password</label>
+                            <input type="password" name="password" class="form-control form-control-lg" style="font-size:1rem;" placeholder="Enter secure password" required>
+                        </div>
+                        <button type="submit" class="btn-ir w-100 mb-3">
+                            <i class="bi bi-shield-lock-fill me-2"></i> Sign In to Dashboard
+                        </button>
+                        <div class="text-center">
+                            <a href="/admin/register" style="color:var(--ir-blue); font-size:0.85rem; font-weight:600; text-decoration:none;">Don't have an account? Register with Invite Key</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+# ── Admin Register ────────────────────────────────────────────────────────────
+@app.route("/admin/register", methods=["GET", "POST"])
+def admin_register():
+    error = None
+    success = False
+    if request.method == "POST":
+        invite_key = request.form.get("invite_key")
+        name = request.form.get("name")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
+        division = request.form.get("division")
+        employee_id = request.form.get("employee_id")
+        password = request.form.get("password")
+
+        if invite_key != ADMIN_INVITE_KEY:
+            error = "Invalid Secret Invite Key. Registration denied."
+        else:
+            conn = sqlite3.connect(DB)
+            c = conn.cursor()
+            try:
+                c.execute("""
+                    INSERT INTO admins (name, email, phone, division, employee_id, password_hash)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (name, email, phone, division, employee_id, generate_password_hash(password)))
+                conn.commit()
+                success = True
+            except sqlite3.IntegrityError:
+                error = "Email or Employee ID already registered."
+            finally:
+                conn.close()
+
+    if success:
+        return redirect(url_for("admin_login"))
+
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Registration — Indian Railways</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+        <style>
+            :root {{
+                --ir-blue: #1a3a6b;
+                --ir-blue-dark: #0f2342;
+                --ir-saffron: #f97316;
+                --ir-light-gray: #f8f9fa;
+            }}
+            body {{
+                font-family: 'Inter', sans-serif;
+                background: linear-gradient(rgba(15, 35, 66, 0.9), rgba(15, 35, 66, 0.95)), url('/static/rail.jpg') center/cover no-repeat;
+                min-height: 100vh; display: flex; flex-direction: column;
+            }}
+            .govt-bar {{ background: #ffffff; border-bottom: 2px solid var(--ir-saffron); padding: 4px 0; font-size: 0.8rem; color: #475569; font-weight: 600; width: 100%; text-align: center; }}
+            .login-wrapper {{ flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }}
+            .login-card {{ background: #ffffff; border: none; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 600px; width: 100%; overflow: hidden; border-top: 4px solid var(--ir-saffron); }}
+            .card-header-ir {{ background: var(--ir-light-gray); padding: 30px 24px 24px; text-align: center; border-bottom: 1px solid #e2e8f0; }}
+            .btn-ir {{ background: var(--ir-saffron); color: white; border: none; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 1rem; transition: all 0.3s; }}
+            .btn-ir:hover {{ background: #ea580c; color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(249,115,22,0.3); }}
+            .form-control:focus {{ border-color: var(--ir-blue); box-shadow: 0 0 0 3px rgba(26,58,107,0.15); }}
+            .back-link {{ color: #cbd5e1; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s; }}
+            .back-link:hover {{ color: #ffffff; text-decoration: underline; }}
+        </style>
+    </head>
+    <body>
+        <div class="govt-bar">
+            <span><i class="bi bi-bank"></i> भारत सरकार | GOVERNMENT OF INDIA &nbsp;&nbsp;|&nbsp;&nbsp; रेल मंत्रालय | MINISTRY OF RAILWAYS</span>
+        </div>
+        <div class="container mt-3">
+            <a href="/admin/login" class="back-link"><i class="bi bi-arrow-left"></i> Back to Login</a>
+        </div>
+        
+        <div class="login-wrapper">
+            <div class="login-card">
+                <div class="card-header-ir">
+                    <img src="/static/aazadi.jpg" alt="Azadi Logo" style="height:55px; margin-bottom:16px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                    <h4 class="fw-bold mb-1" style="color:var(--ir-blue-dark)">Official Registration</h4>
+                    <p style="color:#64748b; font-size:0.9rem; margin:0">Register as a new Administrator</p>
+                </div>
+                <div class="p-4">
+                    {'<div class="alert alert-danger py-2" style="font-size:0.9rem; font-weight:600;"><i class="bi bi-exclamation-triangle-fill me-2"></i>'+error+'</div>' if error else ''}
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Full Name</label>
+                                <input type="text" name="name" class="form-control" required autofocus>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Employee ID</label>
+                                <input type="text" name="employee_id" class="form-control" placeholder="e.g. IR-2091" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Email Address</label>
+                                <input type="email" name="email" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Phone Number</label>
+                                <input type="text" name="phone" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Railway Division</label>
+                            <input type="text" name="division" class="form-control" placeholder="e.g. Northern Railway, Delhi Division" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" style="color:#475569; font-size:0.9rem">Set Password</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <hr class="mb-4">
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold" style="color:var(--ir-blue-dark); font-size:0.9rem"><i class="bi bi-key-fill" style="color:var(--ir-saffron)"></i> Secret Invite Key</label>
+                            <input type="text" name="invite_key" class="form-control" placeholder="Enter the official invite code" required>
+                            <div class="form-text" style="font-size:0.8rem">Required to create an official admin account.</div>
                         </div>
                         <button type="submit" class="btn-ir w-100">
-                            <i class="bi bi-shield-lock-fill me-2"></i> Sign In to Dashboard
+                            <i class="bi bi-person-plus-fill me-2"></i> Register Account
                         </button>
                     </form>
                 </div>
@@ -190,6 +341,19 @@ def admin_logout():
 def init_db():
     conn = sqlite3.connect(DB)
     c = conn.cursor()
+
+    # Admins Table
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS admins (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            phone TEXT,
+            division TEXT,
+            employee_id TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL
+        )
+    """)
 
     # Core component registry — synced from GaugeMarket
     c.execute("""
